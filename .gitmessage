@@ -1,0 +1,14 @@
+# <type>(<scope>): <short imperative summary>   (max 72 chars, English only)
+#
+# Allowed types: feat | fix | docs | refactor | test | chore | build | ci | perf | style
+# Example:
+#   feat(radar): add WeChat channel jobs to the job library
+#
+# Body: explain WHAT changed and WHY (not how). Wrap at 72 chars.
+# Keep the subject imperative, with no trailing period.
+#
+# Footer (optional): Closes #123 / Refs #123 / BREAKING CHANGE: ...
+#
+# ------------------------------ >8 ------------------------------
+# Everything below the scissors line is ignored by git.
+# REMINDER: issues, PRs and commit messages must be written in English.

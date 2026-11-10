@@ -135,7 +135,7 @@
     });
   }
 
-  /** 服务模式交给 Spring Boot 解析（PDF/DOCX/TXT）；解析失败自动降级到本地演示解析 */
+  /** 在线模式交给服务端解析（PDF/DOCX/TXT）；解析失败自动降级到本地演示解析 */
   function createCandidateFromFile(file, done) {
     if (TR.api && TR.api.mode === 'server') {
       TR.api.uploadResume(file).then(function (res) {
@@ -143,7 +143,7 @@
           localCreateCandidate(file);
           TR.toast('后端解析失败，已降级为本地演示解析：' + res.error, 'warn');
         } else {
-          TR.toast('简历已由 Spring Boot 解析并写入 MySQL', 'info');
+          TR.toast('简历解析完成，已写入人才库', 'info');
         }
         if (done) done();
       });
@@ -181,7 +181,7 @@
   }
 
   /* ---------------- 岗位采集 ---------------- */
-  /** 服务模式调用后端采集任务；失败时降级到本地演示采集 */
+  /** 在线模式调用服务端采集任务；失败时降级到本地演示采集 */
   function crawl(source) {
     if (TR.api && TR.api.mode === 'server') {
       TR.api.collect(source ? source.id : null).then(function (res) {
@@ -387,14 +387,14 @@
         var body = U.letterText || TR.generateLetter(c, j, score, U.letterTone, U.letterVariant);
         var restoreBtn = function () { if (btn) { btn.disabled = false; btn.innerHTML = btnHtml; } };
 
-        /* 服务模式：交给后端落库（MAIL_ENABLED=false 时不会真实投递 SMTP） */
+        /* 在线模式：交给服务端落库（MAIL_ENABLED=false 时不会真实投递 SMTP） */
         if (TR.api && TR.api.mode === 'server') {
           TR.api.sendMail({
             candidateId: c.id, jobId: j.id, to: to, subject: subject, body: body
           }).then(function (res) {
             if (!res.ok) { restoreBtn(); TR.toast('后端发送失败：' + res.error, 'warn'); return; }
             U.mailFilter = 'all';
-            TR.toast('推荐邮件已写入 MySQL，可在推送记录中追踪状态');
+            TR.toast('推荐邮件已保存，可在推送记录中追踪状态');
             go('mails');
           });
           return;
@@ -636,7 +636,7 @@
       var server = !!(TR.api && TR.api.mode === 'server');
       TR.confirmModal(server ? '重置服务端数据' : '重置演示数据',
         server
-          ? '将清空 <b>MySQL</b> 中的候选人、岗位、数据源、推送记录与设置，并恢复内置种子数据。此操作不可撤销。'
+          ? '将清空 <b>服务端</b> 中的候选人、岗位、数据源、推送记录与设置，并恢复内置种子数据。此操作不可撤销。'
           : '将清空当前浏览器中的所有演示数据（候选人、岗位、推送记录、设置），并恢复初始状态。此操作不可撤销。',
         function () {
           var finish = function () {
@@ -652,12 +652,12 @@
         }, '确认重置');
     },
     'reconnect': function () {
-      TR.toast('正在连接 Spring Boot 服务…', 'info');
+      TR.toast('正在连接服务…', 'info');
       TR.api.reconnect().then(function (ok) {
-        if (!ok) { render(); TR.toast('后端未就绪，继续使用演示模式', 'warn'); return; }
+        if (!ok) { render(); TR.toast('服务未就绪，继续使用演示数据', 'warn'); return; }
         syncUiSelection();
         render({ keepScroll: true });
-        TR.toast('已连接 Spring Boot + MySQL，数据来自服务端');
+        TR.toast('已连接，数据来自服务端');
       });
     },
     'force-demo': function () {
@@ -732,7 +732,7 @@
     U.letterKey = ''; U.letterText = ''; U.letterTo = '';
   }
 
-  /* 启动：先本地渲染保证秒开，再异步探测后端；连上后用 MySQL 数据重绘 */
+  /* 启动：先本地渲染保证秒开，再异步探测服务；连上后用服务端数据重绘 */
   var initial = location.hash.replace('#/', '');
   U.page = TR.views[initial] ? initial : 'dashboard';
   bindPage();
@@ -744,6 +744,6 @@
     if (!connected || !authedAtBoot) return;
     syncUiSelection();
     render({ keepScroll: true });
-    TR.toast('已连接 Spring Boot + MySQL，数据来自服务端');
+    TR.toast('已连接，数据来自服务端');
   });
 })(window.TR);

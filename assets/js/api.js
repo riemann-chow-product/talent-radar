@@ -1,7 +1,7 @@
 /* 才探 TalentRadar · 后端 API 客户端与「演示 / 服务」双模式切换
  *
  * demo   —— 纯静态原型，数据写入浏览器 localStorage，可 file:// 直接打开
- * server —— Spring Boot + MySQL，数据来自 /api/bootstrap，变更回写 /api/state
+ * server —— 服务端 API，数据来自 /api/bootstrap，变更回写 /api/state
  *
  * 写入类动作（上传简历 / 采集 / 发信）走后端细粒度 REST，成功后重新拉取
  * 全量快照并取消尚未发出的旧快照推送，避免前端过期数据覆盖后端刚写入的记录。
@@ -19,12 +19,12 @@ window.TR = window.TR || {};
   }
 
   var api = {
-    mode: 'demo',              // demo = localStorage | server = Spring Boot + MySQL
+    mode: 'demo',              // demo = localStorage | server = backend API
     // 空串是有效配置（与页面同源），不能用 || 兜底吞掉，否则局域网访问会连到客户端自己的 localhost
     base: cfg.apiBase == null ? 'http://localhost:8080' : cfg.apiBase,
     autoDetect: cfg.autoDetect !== false,
-    status: '正在检测后端服务…',
-    storage: '浏览器 localStorage',
+    status: '正在连接服务…',
+    storage: '本地存储',
     lastError: '',
     serverInfo: null,
     _timer: null,
@@ -76,8 +76,8 @@ window.TR = window.TR || {};
       try { forced = sessionStorage.getItem(FORCE_DEMO_KEY) === '1'; } catch (e) { /* ignore */ }
       if (forced || !this.autoDetect || location.protocol === 'file:') {
         this.mode = 'demo';
-        this.storage = '浏览器 localStorage';
-        this.status = location.protocol === 'file:' ? '演示模式（本地文件打开）' : '演示模式（手动指定）';
+        this.storage = '本地存储';
+        this.status = location.protocol === 'file:' ? '演示数据（本地文件打开）' : '演示数据（手动指定）';
         this.lastError = '';
         this.updateBadges();
         return Promise.resolve(false);
@@ -94,8 +94,7 @@ window.TR = window.TR || {};
           .then(function (h) {
             self.base = base;
             self.serverInfo = h;
-            self.storage = (h && h.storage === 'MySQL') ? 'MySQL 数据库'
-              : (h && h.storage) || '后端服务';
+            self.storage = '服务端存储';
             self.lastError = '';
             return self.bootstrap();
           })
@@ -109,16 +108,16 @@ window.TR = window.TR || {};
       return probe(0)
         .then(function () {
           self.mode = 'server';
-          self.status = '已连接 · ' + self.storage;
+          self.status = '已连接';
           self.updateBadges();
           return true;
         })
         .catch(function (e) {
           self.mode = 'demo';
           self.serverInfo = null;
-          self.storage = '浏览器 localStorage';
-          self.lastError = self._probeError || (e && e.message) || '后端不可达';
-          self.status = '后端未启动，已降级为演示模式';
+          self.storage = '本地存储';
+          self.lastError = self._probeError || (e && e.message) || '服务不可达';
+          self.status = '服务未启动，已切换为演示数据';
           self.updateBadges();
           return false;
         });
@@ -145,7 +144,7 @@ window.TR = window.TR || {};
       this._dirty = false;
     },
 
-    /** 防抖把前端状态快照写回 MySQL（原型桥接接口 PUT /api/state） */
+    /** 防抖把前端状态快照写回服务端（原型桥接接口 PUT /api/state） */
     pushState: function (state) {
       if (this.mode !== 'server') return;
       clearTimeout(this._timer);
@@ -158,7 +157,7 @@ window.TR = window.TR || {};
       if (this._pushing) { this._dirty = true; return; }
       var self = this;
       this._pushing = true;
-      this.status = '正在同步到 ' + this.storage + '…';
+      this.status = '正在同步数据…';
       this.updateBadges();
       var payload = {
         version: 1,
@@ -179,7 +178,7 @@ window.TR = window.TR || {};
         body: JSON.stringify(payload),
         timeout: 10000
       }).then(function () {
-        self.status = '已同步 · ' + self.storage;
+        self.status = '数据已同步';
         self.lastError = '';
       }).catch(function (e) {
         self.status = '同步失败，本地副本已保留';
@@ -191,7 +190,7 @@ window.TR = window.TR || {};
       });
     },
 
-    /** 注册账号：写入 MySQL users 表，返回 { id, name, email, company, token } */
+    /** 注册账号：写入服务端用户表，返回 { id, name, email, company, token } */
     authRegister: function (payload) {
       var self = this;
       return this.request('/api/auth/register', {
@@ -294,8 +293,8 @@ window.TR = window.TR || {};
       this.cancelPush();
       this.mode = 'demo';
       this.serverInfo = null;
-      this.storage = '浏览器 localStorage';
-      this.status = '演示模式（手动指定）';
+      this.storage = '本地存储';
+      this.status = '演示数据（手动指定）';
       TR.Store.restoreLocal();
       this.updateBadges();
     },
@@ -305,8 +304,8 @@ window.TR = window.TR || {};
       if (chip) {
         var dot = '<span class="pulse-dot"></span>';
         chip.innerHTML = this.mode === 'server'
-          ? dot + ' 服务模式 · ' + esc(this.storage)
-          : dot + ' 演示模式 · 数据本地存储';
+          ? dot + ' 在线 · 数据已同步'
+          : dot + ' 演示数据 · 本地存储';
         chip.style.background = this.mode === 'server' ? '#ECFDF5' : '';
         chip.style.borderColor = this.mode === 'server' ? '#A7F3D0' : '';
         chip.style.borderStyle = this.mode === 'server' ? 'solid' : '';
@@ -314,7 +313,7 @@ window.TR = window.TR || {};
       var pill = document.getElementById('service-pill');
       if (pill) {
         pill.innerHTML = this.mode === 'server'
-          ? '<span class="pulse-dot"></span> 已连接 Spring Boot'
+          ? '<span class="pulse-dot"></span> 服务运行中'
           : '<span class="pulse-dot" style="background:#D97706;box-shadow:0 0 0 3px rgba(217,119,6,.14)"></span> 演示模式';
         pill.style.background = this.mode === 'server' ? '#ECFDF5' : '#FFFBEB';
         pill.style.borderColor = this.mode === 'server' ? '#D1FAE5' : '#FDE68A';
@@ -324,8 +323,8 @@ window.TR = window.TR || {};
       var details = document.querySelectorAll('[data-service-detail]');
       Array.prototype.forEach.call(details, function (n) {
         n.textContent = api.mode === 'server'
-          ? api.displayBase() + ' · ' + api.storage + (api.lastError ? ' · ' + api.lastError : '')
-          : api.lastError ? ('未连接：' + api.lastError) : api.displayBase() + ' 未启动';
+          ? api.displayBase() + ' · ' + api.status + (api.lastError ? ' · ' + api.lastError : '')
+          : api.lastError ? ('未连接：' + api.lastError) : api.displayBase() + ' 服务未启动';
       });
       var errs = document.querySelectorAll('[data-service-error]');
       Array.prototype.forEach.call(errs, function (n) {

@@ -19,8 +19,11 @@
   3) 公众号：文章必须 HTTP 200、og:title 与 js_content 正文齐全且含招聘信息；
   4) 任一校验不过直接丢弃。
 
-产出：在 seed/market-jobs.json 与 assets/js/market-jobs.js 中追加岗位，
-      原有 454 条企业官网岗位保持不变。
+产出：1) 在 seed/market-jobs.json 与 assets/js/market-jobs.js 中追加岗位，
+          原有 454 条企业官网岗位保持不变；
+      2) 同步把两类渠道岗位分发到 state.json / data.js / real-jobs.*，
+          保证岗位雷达页与「立即采集」也能看到这两类来源；
+      3) 站点反爬导致本轮抓不到时沿用上一轮已校验快照，渠道不会变空。
 运行：python3 scripts/crawl_channel_jobs.py
       DRY_RUN=1 python3 scripts/crawl_channel_jobs.py   # 只抽样打印，不写文件
 """
@@ -28,7 +31,9 @@ import html
 import json
 import os
 import re
+import shutil
 import ssl
+import subprocess
 import urllib.parse
 import urllib.request
 import urllib.error
@@ -115,8 +120,8 @@ WX_SEEDS = [
     'https://mp.weixin.qq.com/s/07VXIozQFkjwcwn6W1nnNg',
     'https://mp.weixin.qq.com/s/K57PPCRX4GIZ4B1aLEfmcg',
 ]
-WX_MAX = 40           # BFS 后最多处理的文章数
-WX_JOBS_PER_ARTICLE = 8
+WX_MAX = 60           # BFS 后最多处理的文章数
+WX_JOBS_PER_ARTICLE = 12
 RECRUIT_WORDS = ('招聘岗位', '岗位职责', '任职要求', '岗位要求', '薪资待遇', '福利待遇',
                  '招聘信息', '招聘启事', '招聘公告', '招聘简章', '薪资', '职位要求', '岗位推介')
 JOBWORDS = ('(?:工程师|产品经理|设计师|分析师|开发|算法|运营|专员|经理|架构师|研究员|'
@@ -181,6 +186,30 @@ def safe_fetch(url, timeout=25, referer=None):
         return fetch(url, timeout, referer)
     except urllib.error.HTTPError as e:
         return e.code, ''
+    except Exception:
+        return -1, ''
+
+
+def curl_fetch(url, timeout=25):
+    """换一种抓取类型：用系统 curl（HTTP/2 + 浏览器指纹）取页面。
+
+    智联招聘等站点对 urllib 的 HTTP/1.1 只返回反爬挑战页（约 2KB，无职位数据），
+    而 curl 走 HTTP/2 能拿到真实 SSR 页面。curl 不可用时返回 (-1, '')，
+    由调用方跳过该来源，不影响其它渠道。
+    """
+    try:
+        p = subprocess.run(
+            ['curl', '--noproxy', '*', '-sS', '-L', '-m', str(timeout),
+             '-A', UA, '-H', 'Accept-Language: zh-CN,zh;q=0.9',
+             '-w', '\n__STATUS__%{http_code}', url],
+            capture_output=True, timeout=timeout + 5)
+        text = p.stdout.decode('utf-8', 'replace')
+        m = re.search(r'\n__STATUS__(\d+)$', text)
+        code = int(m.group(1)) if m else 0
+        body = text[:m.start()] if m else text
+        if p.returncode != 0 or code != 200 or not body:
+            return code or -1, ''
+        return code, body
     except Exception:
         return -1, ''
 
@@ -366,8 +395,10 @@ def zhaopin_links():
     out = []
 
     def one(kw):
-        u = 'https://sou.zhaopin.com/?kw=' + urllib.parse.quote(kw)
-        s, b = safe_fetch(u, 25)
+        # sou.zhaopin.com 对 urllib 只返回反爬挑战页；改用 curl 请求真实搜索页。
+        # 这是「换种类型的抓取」：同一来源换抓取通道，而非伪造职位链接。
+        u = 'https://www.zhaopin.com/jobs/?jl=489&kw=' + urllib.parse.quote(kw)
+        s, b = curl_fetch(u, 25)
         if s != 200:
             return []
         return list(dict.fromkeys(re.findall(
@@ -376,11 +407,12 @@ def zhaopin_links():
     with ThreadPoolExecutor(max_workers=5) as ex:
         for urls in ex.map(one, ZP_KEYWORDS):
             out.extend(urls)
-    return list(dict.fromkeys(out))
+    # 智联详情页体积较大（约 1.8MB/条），限制总量避免一次抓取过重
+    return list(dict.fromkeys(out))[:120]
 
 
 def zhaopin_detail(url):
-    s, b = safe_fetch(url, 25)
+    s, b = curl_fetch(url, 25)
     if s != 200:
         return None
     t = title_of(b)
@@ -621,8 +653,8 @@ def build_wechat():
         seen_article.add(k)
         articles.append((meta, lines))
         metas.append(meta)
-        if depth < 1:
-            for x in inner[:6]:
+        if depth < 2:
+            for x in inner[:8]:
                 if x not in seen_url:
                     queue.append((x, depth + 1))
     jobs = []
@@ -631,7 +663,154 @@ def build_wechat():
     return jobs, metas
 
 
+# ---------------------------------------------------------------- 消费者种子同步
+# 岗位雷达页面读的是 state.json / data.js 里的「岗位库」，而不是全网职位池；
+# 「立即采集」读的是 real-jobs.*。只更新 market-jobs.* 会让这两类渠道在界面上仍然为空，
+# 因此抓取完成后把代表岗位一并分发到全部消费者（按 source 过滤后重建，天然幂等）。
+STATE_JSON = os.path.join(ROOT, 'server/src/main/resources/seed/state.json')
+REAL_JSON = os.path.join(ROOT, 'server/src/main/resources/seed/real-jobs.json')
+REAL_JS = os.path.join(ROOT, 'assets/js/real-jobs.js')
+DATA_JS = os.path.join(ROOT, 'assets/js/data.js')
+TARGET_SEED_DIR = os.path.join(ROOT, 'server/target/classes/seed')
+
+CHANNEL_QUOTA = [('招聘平台', 12), ('微信公众号', 8)]
+MARK_JOBS = '/* CHANNEL_JOBS_START */'
+MARK_JOBS_END = '/* CHANNEL_JOBS_END */'
+MARK_SOURCES = '/* CHANNEL_SOURCES_START */'
+MARK_SOURCES_END = '/* CHANNEL_SOURCES_END */'
+
+
+def stamp(hours_ago):
+    from datetime import datetime, timedelta, timezone
+    return (datetime.now(timezone.utc) - timedelta(hours=hours_ago)).isoformat().replace('+00:00', 'Z')
+
+
+def pick_channel_jobs(rows):
+    """每个渠道挑一批代表岗位：尽量覆盖不同平台/公众号，同一公司最多 2 条。"""
+    out = []
+    for source, cap in CHANNEL_QUOTA:
+        pool = [j for j in rows if j.get('source') == source]
+        picked, per_company, per_name = [], {}, {}
+        for j in pool:
+            company = (j.get('company') or '')[:10]
+            name = j.get('sourceName') or ''
+            if per_company.get(company, 0) >= 2 or per_name.get(name, 0) >= cap // 2 + 1:
+                continue
+            per_company[company] = per_company.get(company, 0) + 1
+            per_name[name] = per_name.get(name, 0) + 1
+            picked.append(dict(j))
+            if len(picked) >= cap:
+                break
+        if len(picked) < cap:  # 覆盖不足时按原始顺序补齐
+            for j in pool:
+                if any(x.get('id') == j.get('id') for x in picked):
+                    continue
+                picked.append(dict(j))
+                if len(picked) >= cap:
+                    break
+        out.extend(picked[:cap])
+    return out
+
+
+def seed_jobs(rows):
+    out = []
+    for i, j in enumerate(rows):
+        o = dict(j)
+        o['publishedAt'] = stamp(3 + i % 36)
+        o['collectedAt'] = stamp(1 + i % 12)
+        out.append(o)
+    return out
+
+
+def dump_json(path, data):
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
+
+
+def replace_block(path, start, end, items, indent):
+    """替换 JS 文件里由标记包裹的生成区块；找不到标记时跳过并给出提示。"""
+    with open(path, encoding='utf-8') as f:
+        text = f.read()
+    s, e = text.find(start), text.find(end)
+    if s < 0 or e < 0 or e < s:
+        print('  ! 未找到生成标记，跳过 %s' % path)
+        return
+    body = (',\n' + indent).join(json.dumps(j, ensure_ascii=False) for j in items)
+    new = text[:s + len(start)] + '\n' + (indent + body if body else '') + '\n' + indent + text[e:]
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(new)
+
+
+def sync_consumers(rows):
+    channel = pick_channel_jobs(rows)
+    if not channel:
+        print('\n两类渠道岗位为空，跳过消费者种子同步')
+        return
+    seeds = seed_jobs(channel)
+    wx_count = len([j for j in rows if j.get('source') == '微信公众号'])
+    platform_count = len([j for j in rows if j.get('source') == '招聘平台'])
+    wx_source = {
+        'id': 's9', 'name': '微信公众号 · 招聘推文订阅', 'type': '微信公众号',
+        'url': 'https://mp.weixin.qq.com/', 'enabled': True, 'frequency': '每 4 小时',
+        'lastRun': stamp(2), 'count': wx_count, 'status': 'ok'
+    }
+
+    # 1) 服务模式岗位库：保留官网岗位，重建两类渠道岗位 + 补齐公众号数据源
+    with open(STATE_JSON, encoding='utf-8') as f:
+        state = json.load(f)
+    state['jobs'] = [j for j in state['jobs'] if j.get('source') == '企业官网'] + seeds
+    state['sources'] = [s for s in state['sources'] if s.get('type') != '微信公众号'] + [wx_source]
+    dump_json(STATE_JSON, state)
+
+    # 2) 后端「立即采集」池
+    with open(REAL_JSON, encoding='utf-8') as f:
+        real = json.load(f)
+    dump_json(REAL_JSON, [j for j in real if j.get('source') == '企业官网'] + seeds)
+
+    # 3) 前端演示种子（data.js）与前端「立即采集」池（real-jobs.js）
+    replace_block(DATA_JS, MARK_JOBS, MARK_JOBS_END, seeds, '        ')
+    replace_block(DATA_JS, MARK_SOURCES, MARK_SOURCES_END, [wx_source], '        ')
+    replace_block(REAL_JS, MARK_JOBS, MARK_JOBS_END, seeds, '    ')
+
+    # 4) 同步已存在的构建产物副本（若目录存在），避免本地运行读到旧种子
+    if os.path.isdir(TARGET_SEED_DIR):
+        for src, name in [(STATE_JSON, 'state.json'), (REAL_JSON, 'real-jobs.json'),
+                          (JSON_PATH, 'market-jobs.json')]:
+            shutil.copyfile(src, os.path.join(TARGET_SEED_DIR, name))
+
+    print('\n消费者种子已同步：岗位库 %d 条官网 + %d 条渠道岗位（招聘平台 %d / 公众号 %d 条可选）'
+          % (len(state['jobs']) - len(seeds), len(seeds), platform_count, wx_count))
+
+
 # ---------------------------------------------------------------- 主流程
+def merge_channel_snapshots(fresh, history):
+    """按渠道合并本轮与上一轮快照：本轮优先，抓取失败的渠道沿用上一轮已校验岗位。
+
+    招聘站点的反爬策略经常波动，单次抓取为 0 不该让整个渠道在界面上消失。
+    每个来源名称最多保留 80 条，避免历史快照无限累积。
+    """
+    def group(items):
+        g = {}
+        for j in items:
+            g.setdefault(j.get('sourceName') or '其它', []).append(j)
+        return g
+
+    fresh_g, history_g = group(fresh), group(history)
+    merged = []
+    for name in sorted(set(fresh_g) | set(history_g)):
+        kept, seen = [], set()
+        for j in fresh_g.get(name, []) + history_g.get(name, []):
+            k = (j.get('url'), j.get('title'), j.get('company'))
+            if k in seen:
+                continue
+            seen.add(k)
+            kept.append(j)
+        if not fresh_g.get(name) and history_g.get(name):
+            print('  本轮未抓到，沿用上一轮快照：%s（%d 条）' % (name, len(kept)))
+        merged.extend(kept[:80])
+    return merged
+
+
 def collect_platform(builder_links, builder_detail, label, source_name, cap):
     urls = builder_links()
     print('  %s 列表枚举 %d 个详情页 URL' % (label, len(urls)))
@@ -665,10 +844,13 @@ def collect_platform(builder_links, builder_detail, label, source_name, cap):
 
 
 def main():
-    base = json.load(open(JSON_PATH, encoding='utf-8'))
-    base = [j for j in base if j.get('source') == '企业官网']
-    print('保留企业官网岗位 %d 条' % len(base))
-    next_id = max([int(re.sub(r'\D', '', j['id']) or 0) for j in base] or [0]) + 1
+    with open(JSON_PATH, encoding='utf-8') as f:
+        existing = json.load(f)
+    base = [j for j in existing if j.get('source') == '企业官网']
+    history = [j for j in existing if j.get('source') in ('招聘平台', '微信公众号')]
+    print('保留企业官网岗位 %d 条；上一轮渠道岗位 %d 条（抓取失败时兜底）'
+          % (len(base), len(history)))
+    next_id = max([int(re.sub(r'\D', '', j['id']) or 0) for j in existing] or [0]) + 1
 
     raw = []
     print('\n[招聘平台]')
@@ -710,6 +892,8 @@ def main():
             print('    tags', j['tags'], 'jd', j['jd'][:90])
         return
 
+    rows = merge_channel_snapshots(rows, history)
+
     # 按链接去重；公众号一篇推文里会拆出多个不同岗位，需按「链接 + 岗位名」保留
     all_rows, seen = [], set()
     for j in base + rows:
@@ -736,6 +920,7 @@ def main():
         f.write('(function (TR) {\n  TR.marketJobs = ' + payload + ';\n})(window.TR);\n')
     print('写入 %s (%d bytes)' % (JSON_PATH, os.path.getsize(JSON_PATH)))
     print('写入 %s (%d bytes)' % (JS_PATH, os.path.getsize(JS_PATH)))
+    sync_consumers(all_rows)
 
 
 if __name__ == '__main__':

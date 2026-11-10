@@ -1,6 +1,6 @@
 /* 才探 TalentRadar · 登录 / 注册门禁
  *
- * - 服务模式：调用 Spring Boot 的 /api/auth/*，账号写入 MySQL，密码 PBKDF2 哈希
+ * - 在线模式：调用服务端的 /api/auth/*，账号写入用户表，密码 PBKDF2 哈希
  * - 演示模式（file:// 或后端不可达）：账号仅存当前浏览器，内置演示账号始终可用
  * - 登录态存在 localStorage（记住我）或 sessionStorage；未登录时工作台完全隐藏
  */
