@@ -1,0 +1,77 @@
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+
+spring:
+  application:
+    name: talent-radar
+  datasource:
+    # 生产默认连接 MySQL 8；库不存在时自动创建（需要用户具备 CREATE 权限）
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:talent_radar}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Shanghai
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+  mail:
+    host: ${SMTP_HOST:smtp.exmail.qq.com}
+    port: ${SMTP_PORT:465}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: false
+          ssl:
+            enable: true
+          timeout: 8000
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+# 平台业务开关。生产接入时按需打开，默认全部为安全/演示模式
+talent-radar:
+  cors:
+    # 多个来源用逗号分隔；本地静态站点可用 * 或具体 http://localhost:4173
+    allowed-origins: ${CORS_ORIGINS:*}
+  crawl:
+    # demo = 生成演示岗位（不访问第三方站点）；web = 只抓取用户自己配置的官网招聘页
+    mode: ${CRAWL_MODE:demo}
+    timeout-ms: 8000
+    user-agent: TalentRadarBot/0.1 (+internal job board aggregator)
+  mail:
+    # false = 只落库不发信；true = 通过 SMTP 真实投递
+    enabled: ${MAIL_ENABLED:false}
+  resume:
+    # rule = 本地规则抽取；llm = 预留的大模型解析（需自行实现 LlmClient）
+    parse-mode: ${RESUME_PARSE_MODE:rule}
+  seed:
+    # 数据库为空时自动写入演示种子数据
+    enabled: ${SEED_ENABLED:true}
+
+logging:
+  level:
+    com.talentradar: INFO
+    org.hibernate.SQL: warn

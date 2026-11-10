@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" fill="none" aria-hidden="true">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#6366F1" stop-opacity=".30"/>
+      <stop offset="1" stop-color="#6366F1" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sweep" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#22D3EE" stop-opacity="0"/>
+      <stop offset="1" stop-color="#22D3EE" stop-opacity=".22"/>
+    </linearGradient>
+    <linearGradient id="grid" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#A5B4FC" stop-opacity=".22"/>
+      <stop offset="1" stop-color="#22D3EE" stop-opacity=".06"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="450" cy="450" r="430" fill="url(#glow)"/>
+
+  <!-- 扫描扇面 -->
+  <path d="M450 450 L720 180 A382 382 0 0 0 450 68 Z" fill="url(#sweep)"/>
+  <path d="M450 450 L720 180" stroke="#67E8F9" stroke-opacity=".45" stroke-width="1.5"/>
+
+  <!-- 雷达同心圆与准线 -->
+  <g stroke="url(#grid)" stroke-width="1">
+    <circle cx="450" cy="450" r="382"/>
+    <circle cx="450" cy="450" r="300"/>
+    <circle cx="450" cy="450" r="218"/>
+    <circle cx="450" cy="450" r="136"/>
+    <circle cx="450" cy="450" r="58"/>
+    <path d="M450 40V860M40 450H860"/>
+    <path d="M160 160L740 740M740 160L160 740" stroke-dasharray="4 9" stroke-opacity=".5"/>
+  </g>
+
+  <!-- 外圈刻度 -->
+  <g stroke="#A5B4FC" stroke-opacity=".28" stroke-width="1.5">
+    <path d="M450 58v18M450 824v18M58 450h18M824 450h18"/>
+    <path d="M180 180l13 13M707 707l13 13M720 180l-13 13M193 707l-13 13"/>
+  </g>
+
+  <!-- 人才节点网络 -->
+  <g stroke="#67E8F9" stroke-opacity=".30" stroke-width="1.2">
+    <path d="M596 286L676 372L612 470L520 408L596 286"/>
+    <path d="M250 560L344 596L392 690L286 668L250 560"/>
+    <path d="M596 286L520 408L612 470M344 596L520 408"/>
+  </g>
+  <g fill="#A5F3FC">
+    <circle cx="596" cy="286" r="5" fill-opacity=".9"/>
+    <circle cx="676" cy="372" r="3.5" fill-opacity=".7"/>
+    <circle cx="612" cy="470" r="4.5" fill-opacity=".8"/>
+    <circle cx="520" cy="408" r="6" fill-opacity=".95"/>
+    <circle cx="250" cy="560" r="3.5" fill-opacity=".6"/>
+    <circle cx="344" cy="596" r="4" fill-opacity=".75"/>
+    <circle cx="392" cy="690" r="3" fill-opacity=".55"/>
+    <circle cx="286" cy="668" r="3.5" fill-opacity=".6"/>
+  </g>
+  <g fill="#C7D2FE" fill-opacity=".55">
+    <circle cx="208" cy="300" r="2"/><circle cx="330" cy="212" r="1.6"/>
+    <circle cx="742" cy="560" r="2"/><circle cx="660" cy="678" r="1.6"/>
+    <circle cx="160" cy="470" r="1.6"/><circle cx="470" cy="150" r="1.8"/>
+    <circle cx="780" cy="300" r="1.5"/><circle cx="400" cy="790" r="1.8"/>
+  </g>
+
+  <!-- 中心光标 -->
+  <circle cx="450" cy="450" r="9" fill="#67E8F9" fill-opacity=".18"/>
+  <circle cx="450" cy="450" r="3.5" fill="#E0F2FE" fill-opacity=".9"/>
+</svg>

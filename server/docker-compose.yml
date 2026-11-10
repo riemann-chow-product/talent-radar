@@ -1,0 +1,75 @@
+# 才探 TalentRadar · Docker 一键启动：MySQL 8 + Spring Boot 应用（含前端页面，同源 8080）
+#
+#   cd server
+#   docker compose up -d --build      # 首次或改了前端/jar 后
+#   docker compose ps                 # 查看状态
+#   docker compose logs -f app        # 看应用日志
+#   docker compose down               # 停止并移除容器（数据卷保留）
+#   docker compose down -v            # 连数据库数据一起清掉
+#
+# 访问：http://localhost:8080/        平台首页（页面 + API 同源）
+#       http://localhost:8080/api/health
+#       http://localhost:8080/swagger-ui.html
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: talent-radar-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: talent_radar
+      MYSQL_USER: talent
+      MYSQL_PASSWORD: talent123
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+08:00
+    ports:
+      # 宿主机 3306 可能已被本机 MySQL 占用；改映射 13309，容器内仍是 3306，
+      # app 通过 compose 内部网络访问 mysql:3306，不受影响。
+      # 外部工具连库：mysql -h127.0.0.1 -P13309 -utalent -ptalent123 talent_radar
+      - "13309:3306"
+    volumes:
+      - talent-radar-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  app:
+    build:
+      context: ..
+      dockerfile: server/Dockerfile
+    image: talent-radar-app:0.1.0
+    container_name: talent-radar-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      MYSQL_DATABASE: talent_radar
+      MYSQL_USER: talent
+      MYSQL_PASSWORD: talent123
+      JPA_DDL_AUTO: update
+      SEED_ENABLED: "true"
+      # 安全默认值：采集为演示模式、真实 SMTP 关闭
+      CRAWL_MODE: demo
+      MAIL_ENABLED: "false"
+      TZ: Asia/Shanghai
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  talent-radar-mysql-data:

@@ -1,0 +1,819 @@
+{
+  "version": 1,
+  "company": {
+    "name": "星河人才科技",
+    "hrName": "林悦",
+    "hrTitle": "招聘负责人",
+    "hrEmail": "hr@xinghe-talent.com",
+    "senderEmail": "radar@xinghe-talent.com",
+    "smtpHost": "smtp.exmail.qq.com",
+    "smtpPort": "465",
+    "model": "Hunyuan-T1",
+    "temperature": "0.4",
+    "threshold": 75,
+    "autoPush": false,
+    "dailyDigest": true,
+    "cc": "talent@xinghe-talent.com"
+  },
+  "candidates": [
+    {
+      "id": "c1",
+      "name": "陈思远",
+      "title": "高级前端工程师",
+      "years": 6,
+      "education": "本科",
+      "school": "浙江大学",
+      "city": "上海",
+      "salary": "35-45K",
+      "phone": "138****6021",
+      "email": "chensy@example.com",
+      "skills": [
+        "React",
+        "TypeScript",
+        "Next.js",
+        "微前端",
+        "Node.js",
+        "性能优化"
+      ],
+      "status": "matched",
+      "resume": "陈思远_高级前端工程师.pdf",
+      "intent": "看好 AI + 前端方向，希望加入有技术氛围的团队",
+      "highlight": "主导过 3 个百万级 DAU 产品的前端架构升级，首屏性能提升 42%",
+      "uploadedAt": "2026-11-07T02:31:46.537Z"
+    },
+    {
+      "id": "c2",
+      "name": "林知夏",
+      "title": "AI 算法工程师",
+      "years": 4,
+      "education": "硕士",
+      "school": "上海交通大学",
+      "city": "北京",
+      "salary": "40-55K",
+      "phone": "139****3388",
+      "email": "linzx@example.com",
+      "skills": [
+        "PyTorch",
+        "LLM",
+        "RAG",
+        "Python",
+        "Transformer",
+        "模型微调"
+      ],
+      "status": "matched",
+      "resume": "林知夏_算法工程师简历.pdf",
+      "intent": "专注大模型落地，期望参与核心模型研发",
+      "highlight": "负责企业知识库 RAG 系统，问答准确率从 71% 提升至 93%",
+      "uploadedAt": "2026-11-07T08:31:46.537Z"
+    },
+    {
+      "id": "c3",
+      "name": "王浩然",
+      "title": "Go 后端工程师",
+      "years": 5,
+      "education": "本科",
+      "school": "华中科技大学",
+      "city": "深圳",
+      "salary": "30-42K",
+      "phone": "137****9145",
+      "email": "wanghr@example.com",
+      "skills": [
+        "Go",
+        "微服务",
+        "K8s",
+        "MySQL",
+        "Redis",
+        "高并发"
+      ],
+      "status": "pushed",
+      "resume": "王浩然_后端开发.pdf",
+      "intent": "寻找高并发业务场景，偏好基础设施方向",
+      "highlight": "支撑日均 8 亿次请求的交易网关，完成服务治理与全链路压测",
+      "uploadedAt": "2026-11-07T14:31:46.537Z"
+    },
+    {
+      "id": "c4",
+      "name": "赵一诺",
+      "title": "B 端产品经理",
+      "years": 4,
+      "education": "本科",
+      "school": "南京大学",
+      "city": "上海",
+      "salary": "25-35K",
+      "phone": "136****7712",
+      "email": "zhaoyn@example.com",
+      "skills": [
+        "B端产品",
+        "需求分析",
+        "SaaS",
+        "数据分析",
+        "Axure"
+      ],
+      "status": "matched",
+      "resume": "赵一诺_产品经理.pdf",
+      "intent": "希望负责从 0 到 1 的企业级产品线",
+      "highlight": "主导 SaaS 产品从 0 到 1，上线 10 个月ARR 突破 800 万",
+      "uploadedAt": "2026-11-07T20:31:46.537Z"
+    },
+    {
+      "id": "c5",
+      "name": "苏晚",
+      "title": "UI / UX 设计师",
+      "years": 3,
+      "education": "本科",
+      "school": "中国美术学院",
+      "city": "杭州",
+      "salary": "20-30K",
+      "phone": "135****2046",
+      "email": "suwan@example.com",
+      "skills": [
+        "Figma",
+        "设计系统",
+        "交互设计",
+        "用户研究",
+        "原型"
+      ],
+      "status": "parsed",
+      "resume": "苏晚_作品集与简历.pdf",
+      "intent": "关注 B 端设计体系与 AI 产品体验",
+      "highlight": "搭建公司级设计系统，覆盖 6 条产品线，交付效率提升 35%",
+      "uploadedAt": "2026-11-08T02:31:46.537Z"
+    },
+    {
+      "id": "c6",
+      "name": "周子墨",
+      "title": "数据分析师",
+      "years": 3,
+      "education": "硕士",
+      "school": "复旦大学",
+      "city": "上海",
+      "salary": "22-32K",
+      "phone": "188****4409",
+      "email": "zhouzm@example.com",
+      "skills": [
+        "SQL",
+        "Python",
+        "Tableau",
+        "BI",
+        "指标体系",
+        "AB测试"
+      ],
+      "status": "parsed",
+      "resume": "周子墨_数据分析.pdf",
+      "intent": "希望深入业务决策与增长分析",
+      "highlight": "构建增长指标体系，推动实验效率提升 2 倍",
+      "uploadedAt": "2026-11-08T09:31:46.537Z"
+    },
+    {
+      "id": "c7",
+      "name": "吴嘉懿",
+      "title": "大模型应用工程师",
+      "years": 5,
+      "education": "硕士",
+      "school": "北京航空航天大学",
+      "city": "北京",
+      "salary": "45-60K",
+      "phone": "186****8823",
+      "email": "wujy@example.com",
+      "skills": [
+        "LLM",
+        "Agent",
+        "LangChain",
+        "RAG",
+        "Prompt",
+        "向量数据库"
+      ],
+      "status": "matched",
+      "resume": "吴嘉懿_LLM应用.pdf",
+      "intent": "想做真正落地的 Agent 产品",
+      "highlight": "落地企业级多 Agent 客服系统，人工转接率下降 58%",
+      "uploadedAt": "2026-11-08T16:31:46.537Z"
+    },
+    {
+      "id": "c8",
+      "name": "郑雨桐",
+      "title": "测试开发工程师",
+      "years": 4,
+      "education": "本科",
+      "school": "电子科技大学",
+      "city": "深圳",
+      "salary": "22-32K",
+      "phone": "159****1270",
+      "email": "zhengyt@example.com",
+      "skills": [
+        "自动化测试",
+        "Pytest",
+        "CI-CD",
+        "Python",
+        "性能测试"
+      ],
+      "status": "parsed",
+      "resume": "郑雨桐_测开简历.pdf",
+      "intent": "关注质量工程与研发效能",
+      "highlight": "搭建自动化测试平台，回归测试耗时由 6 小时降至 40 分钟",
+      "uploadedAt": "2026-11-09T00:31:46.537Z"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "j1",
+      "title": "微信小程序-前端开发工程师-开发者方向",
+      "company": "腾讯·WXG",
+      "city": "广州",
+      "salary": "35-50K",
+      "minSalary": 35,
+      "maxSalary": 50,
+      "headcount": 2,
+      "source": "企业官网",
+      "sourceName": "腾讯招聘 · 公开职位",
+      "url": "https://careers.tencent.com/jobdesc.html?postId=1891443603608215552",
+      "tags": [
+        "React",
+        "TypeScript",
+        "Next.js",
+        "微前端",
+        "Node.js"
+      ],
+      "minYears": 5,
+      "minEdu": "本科",
+      "jd": "1. 负责小程序开发者生态 & 服务商相关项目的前端开发工作 2. 负责 AI 技术与小程序开发生态结合的相关工作，通过 AI 给开发者和商家提效、赋能 3. 参与技术基建，持续优化研发效能，提升团队工程效率",
+      "publishedAt": "2026-11-08T21:31:46.537Z",
+      "collectedAt": "2026-11-08T22:31:46.537Z",
+      "companyType": "互联网大厂",
+      "fundingStage": "已上市"
+    },
+    {
+      "id": "j2",
+      "title": "金融大模型-算法工程师",
+      "company": "腾讯·CDG",
+      "city": "深圳",
+      "salary": "45-70K",
+      "minSalary": 45,
+      "maxSalary": 70,
+      "headcount": 3,
+      "source": "企业官网",
+      "sourceName": "腾讯招聘 · 公开职位",
+      "url": "https://careers.tencent.com/jobdesc.html?postId=2101507113946886144",
+      "tags": [
+        "PyTorch",
+        "LLM",
+        "RAG",
+        "Python",
+        "Transformer",
+        "模型微调"
+      ],
+      "minYears": 3,
+      "minEdu": "硕士",
+      "jd": "1.负责金融领域大模型预训练与后训练工作，包括但不限于持续预训练、强化学习、模型结构优化等关键环节，提升模型在金融领域的专业性与泛化能力； 2.主导后训练对齐算法的技术实践，包括但不限于设计奖励机制、训练策略等，大幅度提升金融场景下的用户偏好和深度需求满足； 3.聚焦金融核心业务场景，构建大模型驱动的解决方案，推动技术成果产品化，构建端到端金融智能应用系统。",
+      "publishedAt": "2026-11-08T17:31:46.537Z",
+      "collectedAt": "2026-11-08T19:31:46.537Z",
+      "companyType": "互联网大厂",
+      "fundingStage": "已上市"
+    },
+    {
+      "id": "j3",
+      "title": "AI后台开发工程师",
+      "company": "腾讯·TEG",
+      "city": "深圳",
+      "salary": "30-45K",
+      "minSalary": 30,
+      "maxSalary": 45,
+      "headcount": 4,
+      "source": "企业官网",
+      "sourceName": "腾讯招聘 · 公开职位",
+      "url": "https://careers.tencent.com/jobdesc.html?postId=2066810094796058624",
+      "tags": [
+        "Go",
+        "微服务",
+        "K8s",
+        "Redis",
+        "高并发",
+        "MySQL"
+      ],
+      "minYears": 4,
+      "minEdu": "本科",
+      "jd": "1.参与游戏 AI 应用的基础设施建设，负责 GameAgent 后台系统核心框架组件开发；支持游戏智能 NPC、UGC 等 LLM 驱动的 GameAgent 业务落地，并完善 GameAgent 统一基础设施； 2.负责大模型应用的全链路工程化与开发运营体系建设，通过自动化、平台化、智能化（AI 提效）推动团队研发效能系统性提升； 3.负责后台架构和性能优化工作，保障服务高并发、低延迟、高可用…",
+      "publishedAt": "2026-11-08T10:31:46.537Z",
+      "collectedAt": "2026-11-08T11:31:46.537Z",
+      "companyType": "互联网大厂",
+      "fundingStage": "已上市"
+    },
+    {
+      "id": "j4",
+      "title": "AI产品经理",
+      "company": "腾讯·TEG",
+      "city": "深圳",
+      "salary": "25-38K",
+      "minSalary": 25,
+      "maxSalary": 38,
+      "headcount": 1,
+      "source": "企业官网",
+      "sourceName": "腾讯招聘 · 公开职位",
+      "url": "https://careers.tencent.com/jobdesc.html?postId=2092538895714664448",
+      "tags": [
+        "B端产品",
+        "SaaS",
+        "需求分析",
+        "数据分析"
+      ],
+      "minYears": 3,
+      "minEdu": "本科",
+      "jd": "1.负责企业 AI Agent 平台产品规划与建设，推动核心产品能力设计、研发协同及版本迭代； 2.负责 IMate 相关产品方向，包括基础能力建设、研发工作流集成、开放平台能力建设等； 3.结合企业内部研发和办公场景，洞察用户需求，探索 AI Agent 提升工作效率的新模式，并推动产品落地； 4.持续跟踪 AI 技术和行业发展趋势，推动产品能力、用户体验及应用规模持续提升。",
+      "publishedAt": "2026-11-08T04:31:46.537Z",
+      "collectedAt": "2026-11-08T05:31:46.537Z",
+      "companyType": "互联网大厂",
+      "fundingStage": "已上市"
+    },
+    {
+      "id": "j5",
+      "title": "《逆战：未来》交互设计师",
+      "company": "腾讯·IEG",
+      "city": "深圳",
+      "salary": "22-35K",
+      "minSalary": 22,
+      "maxSalary": 35,
+      "headcount": 1,
+      "source": "企业官网",
+      "sourceName": "腾讯招聘 · 公开职位",
+      "url": "https://careers.tencent.com/jobdesc.html?postId=2077217624193937408",
+      "tags": [
+        "Figma",
+        "设计系统",
+        "交互设计",
+        "用户研究",
+        "原型"
+      ],
+      "minYears": 3,
+      "minEdu": "本科",
+      "jd": "1.根据现有版本内容框架，负责游戏的交互设计拓展及战斗玩法体验的持续优化； 2.与跨职能团队合作，从交互专业角度创新高效地提出游戏设计方案； 3.跟进UI界面设计的各阶段，从方案概念到视觉设计，从界面开发到最终的功能验证； 4.运用线框图、故事板、用户流程等工具，有效传达交互和设计思路； 5.持续对游戏内容进行用户研究，收集体验反馈并输出优化方案，以提升玩家体验； 6.完善交互规范细则，持续提升项…",
+      "publishedAt": "2026-11-07T23:31:46.537Z",
+      "collectedAt": "2026-11-08T00:31:46.537Z",
+      "companyType": "互联网大厂",
+      "fundingStage": "已上市"
+    },
+    {
+      "id": "j6",
+      "title": "ima-数据分析师",
+      "company": "腾讯·CSIG",
+      "city": "深圳",
+      "salary": "22-32K",
+      "minSalary": 22,
+      "maxSalary": 32,
+      "headcount": 2,
+      "source": "企业官网",
+      "sourceName": "腾讯招聘 · 公开职位",
+      "url": "https://careers.tencent.com/jobdesc.html?postId=2112491755923484672",
+      "tags": [
+        "SQL",
+        "Python",
+        "BI",
+        "指标体系",
+        "AB测试",
+        "Tableau"
+      ],
+      "minYears": 2,
+      "minEdu": "本科",
+      "jd": "1.负责腾讯ima产品的核心业务数据的分析与监控，搭建并维护关键数据指标体系； 2.深入理解业务逻辑，通过数据分析挖掘潜在问题，提出优化建议； 3.支持团队的数据分析需求，负责业务的经营分析，协助团队看清业务经营现状。",
+      "publishedAt": "2026-11-07T16:31:46.537Z",
+      "collectedAt": "2026-11-07T17:31:46.537Z",
+      "companyType": "互联网大厂",
+      "fundingStage": "已上市"
+    },
+    {
+      "id": "j7",
+      "title": "AI智能体评测高级工程师",
+      "company": "腾讯·CSIG",
+      "city": "北京",
+      "salary": "45-65K",
+      "minSalary": 45,
+      "maxSalary": 65,
+      "headcount": 2,
+      "source": "企业官网",
+      "sourceName": "腾讯招聘 · 公开职位",
+      "url": "https://careers.tencent.com/jobdesc.html?postId=2054531247396532224",
+      "tags": [
+        "LLM",
+        "Agent",
+        "LangChain",
+        "RAG",
+        "向量数据库",
+        "Prompt"
+      ],
+      "minYears": 3,
+      "minEdu": "本科",
+      "jd": "1.负责腾讯自研龙虾WorkBuddy/腾讯AI IDE CodeBuddy产品质量保障及AI评测工作，推动产品质量体系，生成效果提升； 2.负责大语言模型（LLM）及Agent系统的评测体系设计与持续演进，覆盖模型能力评测、Agent任务评测、端到端产品功能评测等，构建Benchmark； 3.跟踪业界评测基准动态（如 SWE-bench、HumanEval、MMLU、AgentBench 等）…",
+      "publishedAt": "2026-11-09T01:31:46.537Z",
+      "collectedAt": "2026-11-09T02:31:46.537Z",
+      "companyType": "互联网大厂",
+      "fundingStage": "已上市"
+    },
+    {
+      "id": "j8",
+      "title": "腾讯云-平台测试工程师",
+      "company": "腾讯·CSIG",
+      "city": "深圳",
+      "salary": "22-35K",
+      "minSalary": 22,
+      "maxSalary": 35,
+      "headcount": 2,
+      "source": "企业官网",
+      "sourceName": "腾讯招聘 · 公开职位",
+      "url": "https://careers.tencent.com/jobdesc.html?postId=2095053968454627328",
+      "tags": [
+        "自动化测试",
+        "Pytest",
+        "CI-CD",
+        "Python",
+        "性能测试"
+      ],
+      "minYears": 3,
+      "minEdu": "本科",
+      "jd": "1.负责腾讯云计费、交易，身份中心相关业务系统的测试工作，保障核心链路的产品质量； 2.独立承担测试计划制定、用例设计与执行，跟进缺陷并推动修复闭环； 3.参与团队质量能力建设，包括自动化测试、测试工具开发、测试环境搭建维护、性能压测等方向，持续提升研发与测试效率； 4.关注线上质量，参与线上问题分析、复盘与改进，持续优化测试策略。",
+      "publishedAt": "2026-11-07T10:31:46.537Z",
+      "collectedAt": "2026-11-07T11:31:46.537Z",
+      "companyType": "互联网大厂",
+      "fundingStage": "已上市"
+    },
+    {
+      "id": "j9",
+      "title": "腾讯AI网盘全栈开发高级工程师",
+      "company": "腾讯·CSIG",
+      "city": "深圳",
+      "salary": "50-70K",
+      "minSalary": 50,
+      "maxSalary": 70,
+      "headcount": 1,
+      "source": "企业官网",
+      "sourceName": "腾讯招聘 · 公开职位",
+      "url": "https://careers.tencent.com/jobdesc.html?postId=2112898585224982528",
+      "tags": [
+        "React",
+        "TypeScript",
+        "微前端",
+        "性能优化",
+        "架构设计"
+      ],
+      "minYears": 7,
+      "minEdu": "本科",
+      "jd": "1.负责腾讯AI网盘核心产品 Web 端及桌面客户端（Windows / Mac）的研发与迭代，包括文件管理、分享协作、搜索预览等核心功能，保障多端功能一致性与极致用户体验； 2.借助 AI 辅助编程工具，独立完成从前端交互、客户端到 BFF / 后台接口的全栈功能落地，持续提升研发效率； 3.参与网盘权限管理与资产管理相关功能的研发，涵盖组织架构、成员与角色权限、文件/目录访问控制、分享权限、空…",
+      "publishedAt": "2026-11-07T04:31:46.537Z",
+      "collectedAt": "2026-11-07T05:31:46.537Z",
+      "companyType": "互联网大厂",
+      "fundingStage": "已上市"
+    },
+    {
+      "id": "j10",
+      "title": "机器学习平台SRE工程师（深圳/北京）",
+      "company": "腾讯·TEG",
+      "city": "深圳",
+      "salary": "40-60K",
+      "minSalary": 40,
+      "maxSalary": 60,
+      "headcount": 2,
+      "source": "企业官网",
+      "sourceName": "腾讯招聘 · 公开职位",
+      "url": "https://careers.tencent.com/jobdesc.html?postId=2117825039658299392",
+      "tags": [
+        "PyTorch",
+        "Python",
+        "K8s",
+        "模型部署",
+        "MLOps"
+      ],
+      "minYears": 4,
+      "minEdu": "本科",
+      "jd": "1.负责机器学习平台的整体 SLA/SLO 定义、监控告警体系建设与故障应急响应，持续提升系统可用性，保障平台各个链路的稳定通畅； 2.负责机器学习平台的架构治理，容灾设计，性能调优。对接AI训练链路、资源调度与存储能力，参与业务和系统的问题排查工作； 3.负责运维运营工作自动化，借助AI能力来解决日常工作问题，包括资源管理、变更管理、故障恢复、用户工具诊断接口/mcp等。",
+      "publishedAt": "2026-11-06T20:31:46.537Z",
+      "collectedAt": "2026-11-06T21:31:46.537Z",
+      "companyType": "互联网大厂",
+      "fundingStage": "已上市"
+    },
+    {
+      "id": "j11",
+      "title": "增长产品经理（AI/Agent 方向）",
+      "company": "腾讯·PCG",
+      "city": "深圳",
+      "salary": "24-36K",
+      "minSalary": 24,
+      "maxSalary": 36,
+      "headcount": 1,
+      "source": "企业官网",
+      "sourceName": "腾讯招聘 · 公开职位",
+      "url": "https://careers.tencent.com/jobdesc.html?postId=2089943379306786816",
+      "tags": [
+        "数据分析",
+        "AB测试",
+        "增长",
+        "需求分析",
+        "SaaS"
+      ],
+      "minYears": 3,
+      "minEdu": "本科",
+      "jd": "1.增长产品建设：负责AI产品海外增长相关功能的设计与迭代，围绕 SEO（搜索引擎优化）、GEO（生成式引擎优化）、社媒达人合作、广告投放等场景，建设可复用的增长工具与能力，提升获客和转化效率； 2.AI 产品设计与迭代：参与 AI 产品的功能设计与优化，包括 Agent 的需求分析、功能定义和体验优化；结合用户反馈与使用数据，持续提升产品价值，促进用户转化与留存； 3.增长数据体系搭建：建立增长…",
+      "publishedAt": "2026-11-06T12:31:46.537Z",
+      "collectedAt": "2026-11-06T13:31:46.537Z",
+      "companyType": "互联网大厂",
+      "fundingStage": "已上市"
+    },
+    {
+      "id": "j12",
+      "title": "证券-AI全栈开发专家",
+      "company": "腾讯·CDG",
+      "city": "深圳",
+      "salary": "30-45K",
+      "minSalary": 30,
+      "maxSalary": 45,
+      "headcount": 2,
+      "source": "企业官网",
+      "sourceName": "腾讯招聘 · 公开职位",
+      "url": "https://careers.tencent.com/jobdesc.html?postId=2104513138056675328",
+      "tags": [
+        "React",
+        "Node.js",
+        "TypeScript",
+        "MySQL",
+        "Go"
+      ],
+      "minYears": 4,
+      "minEdu": "本科",
+      "jd": "1.负责 腾讯证券体系 AI研发工作，覆盖 自选股APP / 微证券小程序/ 问元宝智能体、智能体套件、运营平台等； 2.负责系统架构的设计与演进，负责产品标准化、多产品融合等方向的技术方案规划，输出高质量设计文档，协调各团队落地； 3.推动 AI 研发流程标准化，制定迭代计划并把控交付节奏，保证功能在多客户、多环境下按时高质量交付； 4.构建 AI 研发质量监控体系，主导性能容量、稳定性治理与体…",
+      "publishedAt": "2026-11-06T06:31:46.537Z",
+      "collectedAt": "2026-11-06T07:31:46.537Z",
+      "companyType": "互联网大厂",
+      "fundingStage": "已上市"
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "name": "腾讯招聘 · 社招",
+      "type": "企业官网",
+      "url": "https://careers.tencent.com/search.html",
+      "enabled": true,
+      "frequency": "每 2 小时",
+      "lastRun": "2026-11-09T05:31:46.537Z",
+      "count": 128,
+      "status": "ok"
+    },
+    {
+      "id": "s2",
+      "name": "字节跳动 · 社招",
+      "type": "企业官网",
+      "url": "https://jobs.bytedance.com/experienced/position",
+      "enabled": true,
+      "frequency": "每 4 小时",
+      "lastRun": "2026-11-09T04:31:46.537Z",
+      "count": 86,
+      "status": "ok"
+    },
+    {
+      "id": "s3",
+      "name": "网易 · 社会招聘",
+      "type": "企业官网",
+      "url": "https://hr.163.com/",
+      "enabled": true,
+      "frequency": "每 2 小时",
+      "lastRun": "2026-11-09T05:31:46.537Z",
+      "count": 54,
+      "status": "ok"
+    },
+    {
+      "id": "s4",
+      "name": "美团招聘",
+      "type": "企业官网",
+      "url": "https://zhaopin.meituan.com/",
+      "enabled": true,
+      "frequency": "每日 09:00",
+      "lastRun": "2026-11-08T21:31:46.537Z",
+      "count": 213,
+      "status": "ok"
+    },
+    {
+      "id": "s5",
+      "name": "小米招聘",
+      "type": "企业官网",
+      "url": "https://hr.xiaomi.com/",
+      "enabled": true,
+      "frequency": "每日 09:00",
+      "lastRun": "2026-11-08T21:31:46.537Z",
+      "count": 97,
+      "status": "ok"
+    },
+    {
+      "id": "s6",
+      "name": "华为招聘",
+      "type": "企业官网",
+      "url": "https://career.huawei.com/",
+      "enabled": true,
+      "frequency": "每 1 小时",
+      "lastRun": "2026-11-09T05:31:46.537Z",
+      "count": 462,
+      "status": "ok"
+    },
+    {
+      "id": "s7",
+      "name": "猎聘 · 职位订阅",
+      "type": "招聘平台",
+      "url": "https://www.liepin.com/",
+      "enabled": false,
+      "frequency": "每 4 小时",
+      "lastRun": "2026-11-08T00:31:46.537Z",
+      "count": 176,
+      "status": "paused"
+    },
+    {
+      "id": "s8",
+      "name": "BOSS直聘 · 职位订阅",
+      "type": "招聘平台",
+      "url": "https://www.zhipin.com/",
+      "enabled": true,
+      "frequency": "每 6 小时",
+      "lastRun": "2026-11-09T03:31:46.537Z",
+      "count": 141,
+      "status": "ok"
+    }
+  ],
+  "mails": [
+    {
+      "id": "m1",
+      "candidateId": "c3",
+      "jobId": "j3",
+      "to": "hr@tencent.com",
+      "subject": "【才探 TalentRadar 推荐】王浩然 · AI后台开发工程师｜匹配度 96%",
+      "body": "",
+      "status": "replied",
+      "sentAt": "2026-11-08T00:31:46.537Z"
+    },
+    {
+      "id": "m2",
+      "candidateId": "c1",
+      "jobId": "j1",
+      "to": "hr@tencent.com",
+      "subject": "【才探 TalentRadar 推荐】陈思远 · 微信小程序-前端开发工程师-开发者方向｜匹配度 94%",
+      "body": "",
+      "status": "opened",
+      "sentAt": "2026-11-08T08:31:46.537Z"
+    },
+    {
+      "id": "m3",
+      "candidateId": "c7",
+      "jobId": "j7",
+      "to": "hr@tencent.com",
+      "subject": "【才探 TalentRadar 推荐】吴嘉懿 · AI智能体评测高级工程师｜匹配度 95%",
+      "body": "",
+      "status": "opened",
+      "sentAt": "2026-11-08T13:31:46.537Z"
+    },
+    {
+      "id": "m4",
+      "candidateId": "c2",
+      "jobId": "j2",
+      "to": "hr@tencent.com",
+      "subject": "【才探 TalentRadar 推荐】林知夏 · 金融大模型-算法工程师｜匹配度 91%",
+      "body": "",
+      "status": "sent",
+      "sentAt": "2026-11-08T19:31:46.537Z"
+    },
+    {
+      "id": "m5",
+      "candidateId": "c4",
+      "jobId": "j4",
+      "to": "hr@tencent.com",
+      "subject": "【才探 TalentRadar 推荐】赵一诺 · AI产品经理｜匹配度 89%",
+      "body": "",
+      "status": "sent",
+      "sentAt": "2026-11-09T00:31:46.537Z"
+    },
+    {
+      "id": "m6",
+      "candidateId": "c6",
+      "jobId": "j6",
+      "to": "hr@tencent.com",
+      "subject": "【才探 TalentRadar 推荐】周子墨 · ima-数据分析师｜匹配度 87%",
+      "body": "",
+      "status": "failed",
+      "sentAt": "2026-11-09T03:31:46.537Z"
+    }
+  ],
+  "letters": [],
+  "activities": [
+    {
+      "id": "a1",
+      "type": "mail",
+      "text": "推荐邮件已送达 <b>星云智能</b>，候选人 周子墨 · 数据分析师",
+      "time": "2026-11-09T03:31:46.537Z"
+    },
+    {
+      "id": "a2",
+      "type": "parse",
+      "text": "AI 完成简历解析：<b>郑雨桐_测开简历.pdf</b>，抽取 5 项技能",
+      "time": "2026-11-09T00:31:46.537Z"
+    },
+    {
+      "id": "a3",
+      "type": "mail",
+      "text": "向 <b>序列科技</b> 推送候选人 赵一诺 · B 端产品经理",
+      "time": "2026-11-09T00:31:46.537Z"
+    },
+    {
+      "id": "a4",
+      "type": "crawl",
+      "text": "企业官网采集完成，新增 <b>3</b> 个岗位（元启智能）",
+      "time": "2026-11-08T22:31:46.537Z"
+    },
+    {
+      "id": "a5",
+      "type": "mail",
+      "text": "<b>深蓝 AI</b> 已打开推荐邮件：林知夏 · 大模型算法工程师",
+      "time": "2026-11-08T20:31:46.537Z"
+    },
+    {
+      "id": "a6",
+      "type": "match",
+      "text": "AI 生成 <b>18</b> 条新的候选人-岗位匹配",
+      "time": "2026-11-08T18:31:46.537Z"
+    },
+    {
+      "id": "a7",
+      "type": "crawl",
+      "text": "公众号「AI 招聘观察」采集到 <b>5</b> 条招聘信息",
+      "time": "2026-11-08T16:31:46.537Z"
+    },
+    {
+      "id": "a8",
+      "type": "match",
+      "text": "<b>云帆科技</b> 回复：希望安排 王浩然 的面试",
+      "time": "2026-11-08T00:31:46.537Z"
+    }
+  ],
+  "trend": [
+    {
+      "date": "11/3",
+      "matches": 12,
+      "pushes": 3
+    },
+    {
+      "date": "11/4",
+      "matches": 18,
+      "pushes": 5
+    },
+    {
+      "date": "11/5",
+      "matches": 15,
+      "pushes": 4
+    },
+    {
+      "date": "11/6",
+      "matches": 26,
+      "pushes": 7
+    },
+    {
+      "date": "11/7",
+      "matches": 22,
+      "pushes": 6
+    },
+    {
+      "date": "11/8",
+      "matches": 31,
+      "pushes": 9
+    },
+    {
+      "date": "11/9",
+      "matches": 38,
+      "pushes": 11
+    }
+  ],
+  "logs": [
+    {
+      "time": "2026-11-09T06:19:46.537Z",
+      "level": "info",
+      "text": "[scheduler] 下一轮采集任务已排期 · 60min 后"
+    },
+    {
+      "time": "2026-11-09T05:31:46.537Z",
+      "level": "ok",
+      "text": "[官网] careers.tencent.com/search.html → 2 条新增 / 0 条更新"
+    },
+    {
+      "time": "2026-11-09T05:25:46.537Z",
+      "level": "ok",
+      "text": "[平台] BOSS直聘 关键词订阅 → 7 条新增，去重 3 条"
+    },
+    {
+      "time": "2026-11-09T04:31:46.537Z",
+      "level": "ok",
+      "text": "[官网] jobs.bytedance.com/experienced/position → 1 条新增 / 1 条下架"
+    },
+    {
+      "time": "2026-11-09T03:31:46.537Z",
+      "level": "info",
+      "text": "[邮件] hr@tencent.com 投递失败重试队列已清空"
+    },
+    {
+      "time": "2026-11-09T02:31:46.537Z",
+      "level": "ok",
+      "text": "[官网] hr.163.com → 3 条新增（AI Agent ×2）"
+    }
+  ],
+  "seq": 100
+}

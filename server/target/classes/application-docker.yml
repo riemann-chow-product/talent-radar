@@ -1,0 +1,18 @@
+# Docker 同源部署 profile：页面与 /api 共用一个端口（默认 8080）
+# 容器镜像把 index.html + assets 放到 /app/web/，这里把它追加到静态资源位置。
+spring:
+  web:
+    resources:
+      static-locations:
+        - file:/app/web/
+        - classpath:/META-INF/resources/
+        - classpath:/resources/
+        - classpath:/static/
+        - classpath:/public/
+      cache:
+        period: 0
+  # 容器内连接 compose 网络里的 mysql 服务；也可由环境变量覆盖
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:mysql}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:talent_radar}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}

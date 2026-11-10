@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0A0E28">
+<link rel="icon" type="image/svg+xml" href="assets/img/logo-mark.svg">
+<title>才探 TalentRadar · AI 智能招聘平台</title>
+<link rel="stylesheet" href="assets/css/app.css">
+<link rel="stylesheet" href="assets/css/auth.css">
+</head>
+<body class="auth-locked">
+  <script>
+    /* 已登录时在首屏绘制前解除工作台锁定，避免刷新时闪现登录页 */
+    (function () {
+      try {
+        var k = 'tr-auth-session';
+        var s = localStorage.getItem(k) || sessionStorage.getItem(k);
+        if (s && JSON.parse(s).email) {
+          document.body.className = document.body.className.replace(/\bauth-locked\b/g, '').trim();
+        }
+      } catch (e) { /* 隐私模式下忽略 */ }
+    })();
+  </script>
+
+  <!-- ============ 登录 / 注册首页 ============ -->
+  <div id="auth-screen" class="auth-screen">
+    <section class="auth-brand">
+      <div class="auth-radar-stage" aria-hidden="true">
+        <div class="auth-radar-bg"></div>
+        <div class="auth-radar-sweep"></div>
+        <span class="auth-orbit-dot d1"></span>
+        <span class="auth-orbit-dot d2"></span>
+        <span class="auth-orbit-dot d3"></span>
+      </div>
+      <div class="auth-brand-inner">
+        <div class="auth-logo">
+          <img src="assets/img/logo-mark.svg" alt="才探 TalentRadar logo">
+          <div class="auth-logo-text"><strong>才探</strong><span>TALENTRADAR</span></div>
+        </div>
+
+        <div class="auth-brand-copy">
+          <div class="auth-eyebrow">AI 智能招聘平台</div>
+          <h1>让每一份才华<br>都被<span>精准看见</span></h1>
+          <p>从简历解析、岗位雷达到智能匹配与推荐触达，才探用 AI 把合适的人送到合适的岗位。</p>
+          <div class="auth-features">
+            <div class="auth-feature"><i>01</i><strong>岗位雷达</strong><span>多源聚合 JD，自动去重</span></div>
+            <div class="auth-feature"><i>02</i><strong>智能匹配</strong><span>五维可解释评分</span></div>
+            <div class="auth-feature"><i>03</i><strong>推荐触达</strong><span>生成推荐语并推送</span></div>
+          </div>
+        </div>
+        <div class="auth-brand-foot">© 2026 才探 TalentRadar</div>
+      </div>
+    </section>
+
+    <section class="auth-panel">
+      <div class="auth-form-wrap">
+        <div class="auth-mobile-logo">
+          <img src="assets/img/logo-mark.svg" alt="才探 TalentRadar logo">
+          <div><strong>才探</strong><span>TALENTRADAR</span></div>
+        </div>
+
+        <div class="auth-head">
+          <h2 id="auth-title">欢迎回来</h2>
+          <p id="auth-subtitle">登录你的才探工作台，继续发现合适的人</p>
+        </div>
+
+        <div class="auth-tabs">
+          <button type="button" class="auth-tab on" data-auth-tab="login">登录</button>
+          <button type="button" class="auth-tab" data-auth-tab="register">注册</button>
+        </div>
+
+        <form id="auth-form" novalidate autocomplete="on">
+          <div class="auth-field" id="field-name" hidden>
+            <label for="auth-name">姓名<em>*</em></label>
+            <div class="auth-input-wrap"><input class="auth-input" id="auth-name" type="text" placeholder="请输入你的姓名" autocomplete="name"></div>
+          </div>
+          <div class="auth-field" id="field-company" hidden>
+            <label for="auth-company">公司 / 团队<span style="font-weight:400;color:#A6AEC0">（选填）</span></label>
+            <div class="auth-input-wrap"><input class="auth-input" id="auth-company" type="text" placeholder="例如：才探招聘团队" autocomplete="organization"></div>
+          </div>
+          <div class="auth-field">
+            <label for="auth-email">邮箱<em>*</em></label>
+            <div class="auth-input-wrap"><input class="auth-input" id="auth-email" type="email" placeholder="name@company.com" autocomplete="email"></div>
+          </div>
+          <div class="auth-field">
+            <label for="auth-password">密码<em>*</em></label>
+            <div class="auth-input-wrap">
+              <input class="auth-input" id="auth-password" type="password" placeholder="至少 6 位" autocomplete="current-password">
+              <button class="auth-eye" type="button" data-auth-eye="1" aria-label="显示密码">显示</button>
+            </div>
+          </div>
+          <div class="auth-field" id="field-confirm" hidden>
+            <label for="auth-confirm">确认密码<em>*</em></label>
+            <div class="auth-input-wrap"><input class="auth-input" id="auth-confirm" type="password" placeholder="再次输入密码" autocomplete="new-password"></div>
+          </div>
+
+          <label class="auth-remember">
+            <input type="checkbox" id="auth-remember" checked> 记住我
+            <a class="auth-forgot" href="#" data-auth-forgot="1">忘记密码？</a>
+          </label>
+
+          <div class="auth-error" id="auth-error" hidden></div>
+          <button class="auth-submit" id="auth-submit" type="submit">登录</button>
+        </form>
+
+        <div class="auth-divider"><span>或</span></div>
+        <button class="auth-demo" id="auth-demo" type="button"><span class="spark"></span> 一键体验演示账号</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ 工作台（登录后显示） ============ -->
+  <div class="shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <img src="assets/img/logo-mark.svg" alt="" style="width:30px;height:30px">
+        </div>
+        <div class="brand-text">
+          <strong>才探</strong>
+          <span>TalentRadar · AI 招聘</span>
+        </div>
+      </div>
+      <nav class="nav" id="nav"></nav>
+      <div class="sidebar-foot">
+        <div class="demo-chip" id="mode-chip"><span class="pulse-dot"></span> 演示模式 · 数据本地存储</div>
+        <div class="side-user">
+          <div class="avatar avatar-sm avatar-dynamic" id="side-avatar">林</div>
+          <div class="side-user-meta"><strong id="side-user-name">林悦</strong><span id="side-user-role">招聘负责人</span></div>
+          <button class="icon-btn" id="btn-settings-shortcut" title="系统设置" aria-label="系统设置"></button>
+          <button class="icon-btn auth-logout-btn" id="btn-logout" data-action="logout" title="退出登录" aria-label="退出登录"></button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-btn menu-btn" id="btn-menu" aria-label="展开导航"></button>
+          <div class="crumb" id="crumb">工作台 <span>/</span> <b>总览</b></div>
+        </div>
+        <div class="topbar-right">
+          <div class="global-search">
+            <span id="search-icon"></span>
+            <input id="global-search" type="search" placeholder="搜索候选人、岗位、公司…" autocomplete="off">
+            <kbd>⌘ K</kbd>
+          </div>
+          <span class="status-pill" id="service-pill"><span class="pulse-dot"></span> 采集服务运行中</span>
+          <button class="icon-btn bell-btn" id="btn-bell" aria-label="通知"></button>
+          <div class="avatar avatar-dynamic" id="top-avatar">林</div>
+        </div>
+      </header>
+      <main class="view" id="view"></main>
+    </div>
+  </div>
+
+  <div id="drawer-root"></div>
+  <div id="modal-root"></div>
+  <div id="toast-root"></div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/real-jobs.js"></script>
+  <script src="assets/js/market-jobs.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/views.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# 只把 jar、index.html、assets 打进构建上下文，避免 76MB 之外的源码/中间产物被发送
+.git
+.DS_Store
+node_modules
+*.md
+server/src/
+server/db/
+server/target/classes/
+server/target/generated-sources/
+server/target/generated-test-sources/
+server/target/maven-status/
+server/target/maven-archiver/
+server/target/surefire-reports/
+server/target/test-classes/
+server/target/*.jar.original
+server/target/*.jar.original.*
