@@ -225,7 +225,21 @@ python3 scripts/crawl_channel_jobs.py
 
 # Inspect a sample without writing any file:
 DRY_RUN=1 python3 scripts/crawl_channel_jobs.py
+
+# Verify no personal contact details leaked into any seed file
+python3 scripts/scrub_seed_pii.py --check
 ```
+
+Scraped WeChat posts can contain real recruiter names, phone numbers and email
+addresses. `crawl_channel_jobs.py` masks those values (`scrub_pii()` /
+`scrub_job()`) before writing any seed file; `scripts/scrub_seed_pii.py` applies
+the same rules to the committed snapshots and can be used as a CI check. Run it
+after editing any seed file by hand.
+
+> **Important:** the Spring Boot jar in `server/target/` embeds its own copy of
+> `seed/*.json` and is what `server/Dockerfile` ships. After changing any seed
+> file, run `cd server && mvn clean package -DskipTests` and commit the rebuilt
+> jar, otherwise Docker deployments keep serving the old data.
 
 `crawl_channel_jobs.py`:
 

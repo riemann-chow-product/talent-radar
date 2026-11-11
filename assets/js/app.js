@@ -105,7 +105,7 @@
       var id = 'uf-' + Date.now() + '-' + i;
       items.push({ id: id, file: f });
       if (queue) queue.insertAdjacentHTML('beforeend',
-        '<div class="upload-file" id="' + id + '"><div class="file-ic" style="background:#EEF0FF;color:#4F46E5">' + icon('file', 15) + '</div>' +
+        '<div class="upload-file" id="' + esc(id) + '"><div class="file-ic" style="background:#EEF0FF;color:#4F46E5">' + icon('file', 15) + '</div>' +
         '<div class="grow"><div class="file-name">' + esc(f.name) + '</div><div class="file-state">等待 AI 解析…</div></div>' +
         '<span class="spinner"></span></div>');
     });
@@ -501,12 +501,12 @@
       if (cs.length) body += '<div class="section-title">候选人</div>' + cs.map(function (c) {
         return '<div class="rank-row"><div class="rank-main"><div class="rank-title">' + esc(c.name) + ' · ' + esc(c.title) + '</div>' +
           '<div class="rank-sub">' + esc(c.skills.slice(0, 3).join(' / ')) + '</div></div>' +
-          '<button class="link-btn" data-action="search-cand" data-id="' + c.id + '">查看</button></div>';
+          '<button class="link-btn" data-action="search-cand" data-id="' + esc(c.id) + '">查看</button></div>';
       }).join('');
       if (js.length) body += '<div class="section-title mt16">岗位</div>' + js.map(function (j) {
         return '<div class="rank-row"><div class="rank-main"><div class="rank-title">' + esc(j.title) + ' · ' + esc(j.company) + '</div>' +
           '<div class="rank-sub">' + esc(j.city) + ' · ' + esc(j.salary) + '</div></div>' +
-          '<button class="link-btn" data-action="search-job" data-id="' + j.id + '">查看</button></div>';
+          '<button class="link-btn" data-action="search-job" data-id="' + esc(j.id) + '">查看</button></div>';
       }).join('');
     }
     TR.openModal({ title: '全局搜索', body: body, footer: '<button class="btn btn-outline" data-close="1">关闭</button>',
@@ -515,7 +515,7 @@
 
   function showNotifications() {
     var body = '<div class="feed">' + Store.state.activities.slice(0, 10).map(function (a) {
-      return '<div class="feed-item">' + TR.feedIcon(a.type) + '<div class="feed-body"><div class="feed-text">' + a.text + '</div>' +
+      return '<div class="feed-item">' + TR.feedIcon(a.type) + '<div class="feed-body"><div class="feed-text">' + TR.richText(a.text) + '</div>' +
         '<div class="feed-time">' + TR.timeAgo(a.time) + '</div></div></div>';
     }).join('') + '</div>';
     TR.openModal({ title: '最近动态', body: body, footer: '<button class="btn btn-primary" data-close="1">知道了</button>',

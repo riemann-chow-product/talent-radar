@@ -94,14 +94,14 @@ window.TR = window.TR || {};
         '<td><div class="strong">' + esc(r.job.title) + '</div><div class="sub">' + esc(r.job.company) + ' · ' + esc(r.job.city) + '</div></td>' +
         '<td>' + TR.sourceTag(r.job.source) + '</td>' +
         '<td><div class="score-wrap"><div class="progress" style="width:66px"><i style="width:' + r.score + '%"></i></div><span class="score-num">' + r.score + '</span></div></td>' +
-        '<td class="nowrap" style="text-align:right"><button class="link-btn" data-action="open-letter" data-candidate="' + r.c.id + '" data-job="' + r.job.id + '">写推荐语</button></td></tr>';
+        '<td class="nowrap" style="text-align:right"><button class="link-btn" data-action="open-letter" data-candidate="' + esc(r.c.id) + '" data-job="' + esc(r.job.id) + '">写推荐语</button></td></tr>';
     });
     html += '</tbody></table></div></div></div>';
 
     html += '<div class="card">' + cardHead('最新动态', '平台实时事件流',
       '<button class="btn btn-sm btn-ghost" data-action="notifications">' + icon('bell', 14) + '</button>') + '<div class="card-body tight"><div class="feed">';
     st.activities.slice(0, 6).forEach(function (a) {
-      html += '<div class="feed-item">' + TR.feedIcon(a.type) + '<div class="feed-body"><div class="feed-text">' + a.text + '</div><div class="feed-time">' + TR.timeAgo(a.time) + '</div></div></div>';
+      html += '<div class="feed-item">' + TR.feedIcon(a.type) + '<div class="feed-body"><div class="feed-text">' + TR.richText(a.text) + '</div><div class="feed-time">' + TR.timeAgo(a.time) + '</div></div></div>';
     });
     html += '</div></div></div></div>';
 
@@ -165,7 +165,7 @@ window.TR = window.TR || {};
     html += '<div class="cand-grid">';
     list.forEach(function (c) {
       var score = TR.bestScoreFor(c.id);
-      html += '<div class="cand-card" data-action="cand-detail" data-id="' + c.id + '">' +
+      html += '<div class="cand-card" data-action="cand-detail" data-id="' + esc(c.id) + '">' +
         '<div class="cand-head">' + TR.avatar(c.name, 'lg') +
           '<div class="grow"><div class="cand-name">' + esc(c.name) + ' <span style="margin-left:4px">' + TR.candTag(c.status) + '</span></div>' +
           '<div class="cand-title">' + esc(c.title) + ' · ' + esc(c.city) + '</div></div></div>' +
@@ -176,7 +176,7 @@ window.TR = window.TR || {};
         '<div class="skills-line">' + c.skills.slice(0, 4).map(function (s) { return '<span class="skill">' + esc(s) + '</span>'; }).join('') +
           (c.skills.length > 4 ? '<span class="skill">+' + (c.skills.length - 4) + '</span>' : '') + '</div>' +
         '<div class="cand-foot"><span class="cand-score"><b>' + score + '</b>最佳匹配度</span>' +
-          '<button class="btn btn-sm btn-soft" data-action="open-match" data-id="' + c.id + '">查看匹配 ' + icon('chevronRight', 13) + '</button></div>' +
+          '<button class="btn btn-sm btn-soft" data-action="open-match" data-id="' + esc(c.id) + '">查看匹配 ' + icon('chevronRight', 13) + '</button></div>' +
       '</div>';
     });
     html += '</div>';
@@ -221,7 +221,7 @@ window.TR = window.TR || {};
       html += TR.emptyState('briefcase', '没有找到岗位', '试试其它筛选条件，或点「立即采集」抓取最新职位。');
     } else {
       list.forEach(function (j) {
-        html += '<div class="job-row" data-action="job-detail" data-id="' + j.id + '">' + TR.jobLogo(j.company) +
+        html += '<div class="job-row" data-action="job-detail" data-id="' + esc(j.id) + '">' + TR.jobLogo(j.company) +
           '<div class="job-main"><div class="job-title">' + esc(j.title) +
             '<span class="tag tag-gray">' + j.headcount + ' 人</span>' + TR.sourceTag(j.source) + '</div>' +
             '<div class="job-company"><span>' + icon('building', 12) + esc(j.company) + '</span>' +
@@ -230,7 +230,7 @@ window.TR = window.TR || {};
             '<div class="job-tags">' + j.tags.slice(0, 5).map(function (t) { return '<span class="skill">' + esc(t) + '</span>'; }).join('') + '</div></div>' +
           '<div class="job-side"><div class="job-salary">' + esc(j.salary) + '</div>' +
             '<div class="job-time">' + esc(j.sourceName) + '</div>' +
-            '<button class="btn btn-sm btn-soft" data-action="job-detail" data-id="' + j.id + '">查看 JD</button></div></div>';
+            '<button class="btn btn-sm btn-soft" data-action="job-detail" data-id="' + esc(j.id) + '">查看 JD</button></div></div>';
       });
     }
     html += '</div>';
@@ -307,8 +307,8 @@ window.TR = window.TR || {};
             return '<span class="skill ' + (m.hits.indexOf(t) !== -1 ? 'hit' : '') + '">' + (m.hits.indexOf(t) !== -1 ? '✓ ' : '') + esc(t) + '</span>';
           }).join('') + '</div></div>' +
         '<div class="market-actions">' +
-          '<button class="btn btn-sm btn-outline" data-action="job-detail" data-id="' + j.id + '">查看 JD</button>' +
-          '<button class="btn btn-sm btn-primary" data-action="open-letter" data-candidate="' + c.id + '" data-job="' + j.id + '">' + icon('sparkles', 13) + ' 写推荐语</button>' +
+          '<button class="btn btn-sm btn-outline" data-action="job-detail" data-id="' + esc(j.id) + '">查看 JD</button>' +
+          '<button class="btn btn-sm btn-primary" data-action="open-letter" data-candidate="' + esc(c.id) + '" data-job="' + esc(j.id) + '">' + icon('sparkles', 13) + ' 写推荐语</button>' +
         '</div></div>';
     });
     html += '</div>';
@@ -360,7 +360,7 @@ window.TR = window.TR || {};
     html += '<div class="match-layout">' +
       '<div class="card">' + cardHead('选择候选人', st.candidates.length + ' 位在库人才') +
         '<div class="pick-list">' + st.candidates.map(function (x) {
-          return '<div class="pick-item ' + (x.id === c.id ? 'active' : '') + '" data-action="pick-candidate" data-id="' + x.id + '">' +
+          return '<div class="pick-item ' + (x.id === c.id ? 'active' : '') + '" data-action="pick-candidate" data-id="' + esc(x.id) + '">' +
             TR.avatar(x.name) + '<div class="pick-meta"><div class="pick-name">' + esc(x.name) + '</div>' +
             '<div class="pick-sub">' + esc(x.title) + ' · ' + x.years + '年</div></div>' +
             '<span class="score-num" style="font-size:12px;color:var(--primary)">' + TR.bestScoreFor(x.id) + '</span></div>';
@@ -399,8 +399,8 @@ window.TR = window.TR || {};
         }).join('') + '</div>' +
         '<div class="reason-box mt12"><span class="ai-label">' + icon('sparkles', 13) + ' AI 推荐理由</span>' + esc(TR.matchReason(c, j, m)) + '</div>' +
         '<div class="match-actions">' +
-          '<button class="btn btn-sm btn-outline" data-action="job-detail" data-id="' + j.id + '">查看 JD</button>' +
-          '<button class="btn btn-sm btn-primary" data-action="open-letter" data-candidate="' + c.id + '" data-job="' + j.id + '">' + icon('sparkles', 13) + ' 生成推荐语</button>' +
+          '<button class="btn btn-sm btn-outline" data-action="job-detail" data-id="' + esc(j.id) + '">查看 JD</button>' +
+          '<button class="btn btn-sm btn-primary" data-action="open-letter" data-candidate="' + esc(c.id) + '" data-job="' + esc(j.id) + '">' + icon('sparkles', 13) + ' 生成推荐语</button>' +
         '</div></div>';
     });
     }
@@ -441,10 +441,10 @@ window.TR = window.TR || {};
         '<div class="card-body">' +
           '<div class="grid g2 mb16">' +
             '<div class="field"><label>候选人</label><select class="select" id="letter-candidate">' +
-              st.candidates.map(function (x) { return '<option value="' + x.id + '"' + (x.id === c.id ? ' selected' : '') + '>' + esc(x.name) + ' · ' + esc(x.title) + '</option>'; }).join('') +
+              st.candidates.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === c.id ? ' selected' : '') + '>' + esc(x.name) + ' · ' + esc(x.title) + '</option>'; }).join('') +
             '</select></div>' +
             '<div class="field"><label>目标岗位</label><select class="select" id="letter-job">' +
-              st.jobs.map(function (x) { return '<option value="' + x.id + '"' + (x.id === j.id ? ' selected' : '') + '>' + esc(x.title) + ' · ' + esc(x.company) + '</option>'; }).join('') +
+              st.jobs.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === j.id ? ' selected' : '') + '>' + esc(x.title) + ' · ' + esc(x.company) + '</option>'; }).join('') +
             '</select></div></div>' +
           '<div class="section-title">文案语气</div><div class="tone-row">' +
             Object.keys(TR.toneLabels).map(function (k) {
@@ -526,10 +526,10 @@ window.TR = window.TR || {};
         '<td>' + TR.mailTag(m.status) + '</td>' +
         '<td class="nowrap text-muted">' + TR.fmtDateTime(m.sentAt) + '</td>' +
         '<td><div class="tbl-actions">' +
-          '<button class="link-btn" data-action="mail-detail" data-id="' + m.id + '">详情</button>' +
-          (m.status === 'failed' ? '<button class="link-btn" data-action="resend-mail" data-id="' + m.id + '">重发</button>' :
-            m.status === 'sent' ? '<button class="link-btn muted" data-action="mock-open" data-id="' + m.id + '">模拟查看</button>' :
-            m.status === 'opened' ? '<button class="link-btn muted" data-action="mock-reply" data-id="' + m.id + '">模拟回复</button>' : '') +
+          '<button class="link-btn" data-action="mail-detail" data-id="' + esc(m.id) + '">详情</button>' +
+          (m.status === 'failed' ? '<button class="link-btn" data-action="resend-mail" data-id="' + esc(m.id) + '">重发</button>' :
+            m.status === 'sent' ? '<button class="link-btn muted" data-action="mock-open" data-id="' + esc(m.id) + '">模拟查看</button>' :
+            m.status === 'opened' ? '<button class="link-btn muted" data-action="mock-reply" data-id="' + esc(m.id) + '">模拟回复</button>' : '') +
         '</div></td></tr>';
     });
     html += '</tbody></table></div></div>';
@@ -572,9 +572,9 @@ window.TR = window.TR || {};
           '<div class="source-stat"><b>' + TR.timeAgo(s.lastRun) + '</b><span>最近运行</span></div></div>' +
         '<div class="source-foot"><div class="last">' + icon('clock', 12) + ' ' + TR.fmtDateTime(s.lastRun) + '</div>' +
           '<div class="flex gap8 center">' +
-            '<button class="btn btn-sm btn-outline" data-action="crawl-one" data-id="' + s.id + '" title="立即采集">' + icon('play', 12) + '</button>' +
-            '<span class="switch ' + (s.enabled ? 'on' : '') + '" data-action="toggle-source" data-id="' + s.id + '" title="启停"></span>' +
-            '<button class="icon-btn" data-action="delete-source" data-id="' + s.id + '" title="移除">' + icon('trash', 14) + '</button>' +
+            '<button class="btn btn-sm btn-outline" data-action="crawl-one" data-id="' + esc(s.id) + '" title="立即采集">' + icon('play', 12) + '</button>' +
+            '<span class="switch ' + (s.enabled ? 'on' : '') + '" data-action="toggle-source" data-id="' + esc(s.id) + '" title="启停"></span>' +
+            '<button class="icon-btn" data-action="delete-source" data-id="' + esc(s.id) + '" title="移除">' + icon('trash', 14) + '</button>' +
           '</div></div></div>';
     });
     html += '</div>';
@@ -608,7 +608,7 @@ window.TR = window.TR || {};
         formRow('文案模型', '生成推荐语所用的大模型', '<select class="select" id="co-model">' +
           ['Hunyuan-T1', 'Hunyuan-Standard', 'DeepSeek-V3', 'GPT-4o'].map(function (m) { return '<option' + (co.model === m ? ' selected' : '') + '>' + m + '</option>'; }).join('') + '</select>') +
         formRow('生成温度', '越低越稳定、越高越有创意', input('co-temperature', co.temperature)) +
-        formRow('推荐阈值', '仅推送匹配度不低于该值的岗位', '<div class="form-inline"><input class="input" id="co-threshold" type="number" min="50" max="99" value="' + co.threshold + '"><span class="text-sm text-muted">%</span></div>' +
+        formRow('推荐阈值', '仅推送匹配度不低于该值的岗位', '<div class="form-inline"><input class="input" id="co-threshold" type="number" min="50" max="99" value="' + esc(co.threshold) + '"><span class="text-sm text-muted">%</span></div>' +
           '<div class="progress mt8"><i style="width:' + co.threshold + '%"></i></div>') +
       '</div></div></div>';
 

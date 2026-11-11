@@ -216,7 +216,20 @@ python3 scripts/crawl_channel_jobs.py
 
 # 只抽样查看、不写文件：
 DRY_RUN=1 python3 scripts/crawl_channel_jobs.py
+
+# 校验所有种子文件没有残留个人联系方式
+python3 scripts/scrub_seed_pii.py --check
 ```
+
+微信公众号推文里可能带有真实联系人姓名、手机号和邮箱。`crawl_channel_jobs.py`
+在写入任何种子文件前会用 `scrub_pii()` / `scrub_job()` 脱敏；
+`scripts/scrub_seed_pii.py` 用同一套规则处理仓库中已提交的快照，也可作为 CI 检查。
+手工改动种子文件后请运行一次。
+
+> **注意**：`server/target/` 里的 Spring Boot jar 内嵌了一份 `seed/*.json`，
+> `server/Dockerfile` 部署的正是这个 jar。改动任何种子文件后，必须执行
+> `cd server && mvn clean package -DskipTests` 并提交重新打出的 jar，
+> 否则 Docker 部署仍会读到旧数据。
 
 `crawl_channel_jobs.py` 的行为：
 

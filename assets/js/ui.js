@@ -78,6 +78,14 @@ window.TR = window.TR || {};
     });
   }
 
+  /* Activity streams historically contain <b>…</b> emphasis, but their text can
+   * also include user-controlled values (resume filenames, company names).
+   * Escape everything first, then re-enable ONLY the harmless emphasis tags.
+   * Never pass raw HTML through here. */
+  function richText(v) {
+    return esc(v).replace(/&lt;b&gt;/g, '<b>').replace(/&lt;\/b&gt;/g, '</b>');
+  }
+
   function toast(msg, type) {
     var root = document.getElementById('toast-root');
     if (!root) return;
@@ -240,6 +248,7 @@ window.TR = window.TR || {};
 
   TR.icon = icon;
   TR.esc = esc;
+  TR.richText = richText;
   TR.toast = toast;
   TR.openDrawer = openDrawer;
   TR.openModal = openModal;

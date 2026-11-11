@@ -310,6 +310,51 @@ def parse_headcount(text):
     return max(1, min(99, int(m.group(1)))) if m else 1
 
 
+# ---------------------------------------------------------------- PII scrubbing
+# Job posts copied from public WeChat articles can contain real recruiter names,
+# mobile/landline numbers, emails and instant-messaging IDs. Redistributing those
+# verbatim creates personal-information and copyright exposure, so every scraped
+# text field is masked before it reaches any seed file. Keep the surrounding JD
+# text intact so downstream parsing/scoring is unaffected.
+_PII_PATTERNS = [
+    # mobile numbers (11 digits starting with 1[3-9])
+    (re.compile(r'(?<!\d)1[3-9]\d{9}(?!\d)'), '[phone redacted]'),
+    # landline numbers, with or without area-code separator
+    (re.compile(r'(?<!\d)0\d{2,3}[- ]?\d{7,8}(?!\d)'), '[phone redacted]'),
+    # national ID numbers
+    (re.compile(r'(?<!\d)\d{17}[\dXx](?!\d)'), '[id redacted]'),
+    # email addresses (fictional demo domains are product data, not personal info)
+    (re.compile(r'[\w.+-]+@(?!(?:example\.com|xinghe-talent\.com|caitan\.ai|localhost)\b)[\w-]+\.[\w.-]+'),
+     '[email redacted]'),
+    # QQ / WeChat IDs (only when followed by an explicit account-like token;
+    # plain phrases such as 微信公众号招聘 must stay intact)
+    (re.compile(r'(?:QQ|微信|vx|VX|WeChat)\s*[:：=]\s*[A-Za-z0-9_-]{5,20}'), '[contact redacted]'),
+    (re.compile(r'(?:联系人|联系方式|咨询人)\s*[:：]?\s*[\u4e00-\u9fa5]{1,3}(?:女士|先生|老师|经理|主管|小姐)'),
+     '[contact redacted]'),
+    # Label followed by a short Chinese name (no more Han chars afterwards), so
+    # it also matches when the JD is embedded in JSON and ends with a quote.
+    (re.compile(r'(?:联系人|联系方式|咨询人)\s*[:：]\s*[\u4e00-\u9fa5]{2,4}(?![\u4e00-\u9fa5])'),
+     '[contact redacted]'),
+]
+
+
+def scrub_pii(text):
+    """Mask personal contact details in scraped public job text."""
+    out = str(text or '')
+    for pattern, replacement in _PII_PATTERNS:
+        out = pattern.sub(replacement, out)
+    return out
+
+
+def scrub_job(job):
+    """Return a copy of a job dict with PII masked in every free-text field."""
+    out = dict(job)
+    for key in ('jd', 'title', 'company', 'sourceName', 'city', 'salary'):
+        if isinstance(out.get(key), str):
+            out[key] = scrub_pii(out[key])
+    return out
+
+
 def make_job(idx, title, company, city, salary_text, url, source, source_name, jd,
              headcount=1, tags=None):
     salary, mn, mx = parse_salary(salary_text)
@@ -330,7 +375,7 @@ def make_job(idx, title, company, city, salary_text, url, source, source_name, j
         'tags': tags or tags_for(jd, title),
         'minYears': parse_years(jd),
         'minEdu': parse_edu(jd),
-        'jd': clean(jd)[:900],
+        'jd': scrub_pii(clean(jd)[:900]),
     }
 
 
@@ -742,6 +787,9 @@ def replace_block(path, start, end, items, indent):
 
 
 def sync_consumers(rows):
+    # Defence in depth: mask PII on every job before writing any consumer file,
+    # including jobs carried over from a previously verified snapshot.
+    rows = [scrub_job(j) for j in rows]
     channel = pick_channel_jobs(rows)
     if not channel:
         print('\n两类渠道岗位为空，跳过消费者种子同步')
@@ -758,14 +806,14 @@ def sync_consumers(rows):
     # 1) 服务模式岗位库：保留官网岗位，重建两类渠道岗位 + 补齐公众号数据源
     with open(STATE_JSON, encoding='utf-8') as f:
         state = json.load(f)
-    state['jobs'] = [j for j in state['jobs'] if j.get('source') == '企业官网'] + seeds
+    state['jobs'] = [scrub_job(j) for j in state['jobs'] if j.get('source') == '企业官网'] + seeds
     state['sources'] = [s for s in state['sources'] if s.get('type') != '微信公众号'] + [wx_source]
     dump_json(STATE_JSON, state)
 
     # 2) 后端「立即采集」池
     with open(REAL_JSON, encoding='utf-8') as f:
         real = json.load(f)
-    dump_json(REAL_JSON, [j for j in real if j.get('source') == '企业官网'] + seeds)
+    dump_json(REAL_JSON, [scrub_job(j) for j in real if j.get('source') == '企业官网'] + seeds)
 
     # 3) 前端演示种子（data.js）与前端「立即采集」池（real-jobs.js）
     replace_block(DATA_JS, MARK_JOBS, MARK_JOBS_END, seeds, '        ')
