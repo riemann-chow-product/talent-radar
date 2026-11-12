@@ -13,9 +13,42 @@ window.TR = window.TR || {};
 
   var cfg = window.TR_CONFIG || {};
   var FORCE_DEMO_KEY = 'tr-force-demo';
+  var SESSION_KEY = 'tr-auth-session';
+  var SHADOW_KEY = 'tr-pending-state';
+  var MAX_RETRIES = 5;
 
   function signal(ms) {
     return (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) ? AbortSignal.timeout(ms) : undefined;
+  }
+
+  /** Read the bearer token saved by auth.js; the demo token is never sent. */
+  function authToken() {
+    try {
+      var raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
+      var s = raw ? JSON.parse(raw) : null;
+      return (s && typeof s.token === 'string' && s.token && s.token !== 'demo') ? s.token : '';
+    } catch (e) { return ''; }
+  }
+
+  function handleUnauthorized() {
+    try { localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* ignore */ }
+    if (TR.toast) TR.toast('登录已过期，请重新登录', 'warn');
+  }
+
+  function snapshot(state) {
+    return {
+      version: 1,
+      company: state.company,
+      candidates: state.candidates,
+      jobs: state.jobs,
+      sources: state.sources,
+      mails: state.mails,
+      letters: state.letters,
+      activities: state.activities,
+      trend: state.trend,
+      logs: state.logs,
+      seq: state.seq
+    };
   }
 
   var api = {
@@ -49,16 +82,29 @@ window.TR = window.TR || {};
       try { return location.origin; } catch (e) { return '同源服务'; }
     },
 
-    /** 通用请求：非 2xx 抛出带响应正文的 Error */
+    /** 通用请求：注入 Bearer token；非 2xx 抛出带响应正文的 Error */
     request: function (path, opts) {
       opts = opts || {};
+      var headers = {};
+      Object.keys(opts.headers || {}).forEach(function (k) { headers[k] = opts.headers[k]; });
+      var token = authToken();
+      if (token && !headers.Authorization) headers.Authorization = 'Bearer ' + token;
       var init = {
         method: opts.method || 'GET',
-        headers: opts.headers || {},
-        signal: signal(opts.timeout || 6000)
+        headers: headers,
+        signal: opts.signal || signal(opts.timeout || 6000)
       };
       if (opts.body !== undefined) init.body = opts.body;
+      if (opts.keepalive) init.keepalive = true;
       return fetch(this.url(path, opts.base), init).then(function (r) {
+        if (r.status === 401) {
+          handleUnauthorized();
+          return r.text().then(function (t) {
+            var brief = '';
+            try { brief = (JSON.parse(t).message || '').slice(0, 120); } catch (e) { /* ignore */ }
+            throw new Error('HTTP 401' + (brief ? ' · ' + brief : ''));
+          });
+        }
         if (r.ok) return r.json();
         return r.text().then(function (t) {
           var brief = '';
@@ -96,6 +142,10 @@ window.TR = window.TR || {};
             self.serverInfo = h;
             self.storage = '服务端存储';
             self.lastError = '';
+            // Not logged in yet: the service is reachable, but /api/bootstrap
+            // requires a token. Keep the local view and let the post-login
+            // reload pull the server snapshot.
+            if (!authToken()) return null;
             return self.bootstrap();
           })
           .catch(function (e) {
@@ -110,6 +160,7 @@ window.TR = window.TR || {};
           self.mode = 'server';
           self.status = '已连接';
           self.updateBadges();
+          self.resumePending();
           return true;
         })
         .catch(function (e) {
@@ -142,52 +193,93 @@ window.TR = window.TR || {};
       clearTimeout(this._timer);
       this._timer = null;
       this._dirty = false;
+      // Abort an in-flight PUT so a stale full snapshot cannot land after a
+      // fine-grained REST write and overwrite the freshly created record.
+      if (this._controller) {
+        this._controller._cancelled = true;
+        try { this._controller.abort(); } catch (e) { /* ignore */ }
+        this._controller = null;
+      }
     },
 
     /** 防抖把前端状态快照写回服务端（原型桥接接口 PUT /api/state） */
     pushState: function (state) {
       if (this.mode !== 'server') return;
+      // Keep a local shadow copy until the server confirms the write, so a
+      // refresh/close inside the debounce window cannot lose the change.
+      try { localStorage.setItem(SHADOW_KEY, JSON.stringify(snapshot(state))); } catch (e) { /* ignore */ }
       clearTimeout(this._timer);
       var self = this;
       this._timer = setTimeout(function () { self._push(state); }, cfg.syncDebounce || 450);
     },
 
-    _push: function (state) {
+    _push: function (state, attempt) {
       if (this.mode !== 'server') return;
       if (this._pushing) { this._dirty = true; return; }
+      attempt = attempt || 0;
       var self = this;
+      var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      ctrl && (ctrl._cancelled = false);
+      this._controller = ctrl;
+      var timedOut = setTimeout(function () {
+        if (ctrl && !ctrl._cancelled) { try { ctrl.abort(); } catch (e) { /* ignore */ } }
+      }, 10000);
+
       this._pushing = true;
       this.status = '正在同步数据…';
       this.updateBadges();
-      var payload = {
-        version: 1,
-        company: state.company,
-        candidates: state.candidates,
-        jobs: state.jobs,
-        sources: state.sources,
-        mails: state.mails,
-        letters: state.letters,
-        activities: state.activities,
-        trend: state.trend,
-        logs: state.logs,
-        seq: state.seq
-      };
       this.request('/api/state', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        timeout: 10000
+        body: JSON.stringify(snapshot(state)),
+        signal: ctrl ? ctrl.signal : signal(10000)
       }).then(function () {
         self.status = '数据已同步';
         self.lastError = '';
+        self._retries = 0;
+        try { localStorage.removeItem(SHADOW_KEY); } catch (e) { /* ignore */ }
       }).catch(function (e) {
-        self.status = '同步失败，本地副本已保留';
-        self.lastError = (e && e.message) || '同步失败';
+        clearTimeout(timedOut);
+        if (ctrl && ctrl._cancelled) return;   // intentionally cancelled by refresh()
+        var reason = (e && e.message) || '同步失败';
+        self.lastError = reason;
+        if (reason.indexOf('HTTP 401') === 0) return;   // session expired; do not retry
+        var next = attempt + 1;
+        if (next <= MAX_RETRIES) {
+          self._retries = next;
+          self.status = '同步失败，正在重试（' + next + '/' + MAX_RETRIES + '）';
+          var delay = Math.min(30000, 1000 * Math.pow(2, attempt));
+          setTimeout(function () { self._push(TR.Store.state, next); }, delay);
+        } else {
+          self.status = '同步失败，数据已保存在本地';
+          if (TR.toast) TR.toast('数据同步失败，已保存在本地，稍后会自动重试', 'warn');
+        }
       }).then(function () {
+        clearTimeout(timedOut);
         self._pushing = false;
+        self._controller = null;
         self.updateBadges();
         if (self._dirty) { self._dirty = false; self.pushState(TR.Store.state); }
       });
+    },
+
+    /** 页面隐藏/卸载前尽力冲刷一次；失败时影子副本留到下次启动重推 */
+    flushOnHide: function () {
+      if (this.mode !== 'server') return;
+      var pending = null;
+      try { pending = localStorage.getItem(SHADOW_KEY); } catch (e) { return; }
+      if (!pending) return;
+      clearTimeout(this._timer);
+      this._timer = null;
+      this._push(TR.Store.state);
+    },
+
+    /** 启动后发现上次未同步的影子副本，立即重推 */
+    resumePending: function () {
+      if (this.mode !== 'server') return;
+      var pending = null;
+      try { pending = localStorage.getItem(SHADOW_KEY); } catch (e) { return; }
+      if (pending) this._push(TR.Store.state);
     },
 
     /** 注册账号：写入服务端用户表，返回 { id, name, email, company, token } */
@@ -339,6 +431,16 @@ window.TR = window.TR || {};
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
+
+  /* Best-effort flush before the page goes away. The shadow copy in
+   * localStorage survives even if this request is cancelled, and
+   * resumePending() replays it on the next load. */
+  try {
+    window.addEventListener('pagehide', function () { api.flushOnHide(); });
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') api.flushOnHide();
+    });
+  } catch (e) { /* ignore */ }
 
   TR.api = api;
 })(window.TR);

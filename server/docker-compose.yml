@@ -61,6 +61,10 @@ services:
       # 安全默认值：采集为演示模式、真实 SMTP 关闭
       CRAWL_MODE: demo
       MAIL_ENABLED: "false"
+      # 业务接口强制鉴权；同源部署无需 CORS。独立前端/局域网访问时
+      # 把 CORS_ORIGINS 设为明确的来源列表（不支持通配符）
+      AUTH_ENABLED: "true"
+      CORS_ORIGINS: ""
       TZ: Asia/Shanghai
     ports:
       - "8080:8080"

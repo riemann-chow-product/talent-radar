@@ -53,9 +53,13 @@ springdoc:
 
 # 平台业务开关。生产接入时按需打开，默认全部为安全/演示模式
 talent-radar:
+  auth:
+    # 业务接口强制校验 Bearer token；仅 /api/health 与登录/注册公开
+    enabled: ${AUTH_ENABLED:true}
   cors:
-    # 多个来源用逗号分隔；本地静态站点可用 * 或具体 http://localhost:4173
-    allowed-origins: ${CORS_ORIGINS:*}
+    # 多个来源用逗号分隔，必须写明确切来源；通配符会被拒绝并回退到回环地址
+    # 同源部署（Docker）无需 CORS；独立前端/局域网访问时按实际来源配置
+    allowed-origins: ${CORS_ORIGINS:}
   crawl:
     # demo = 生成演示岗位（不访问第三方站点）；web = 只抓取用户自己配置的官网招聘页
     mode: ${CRAWL_MODE:demo}

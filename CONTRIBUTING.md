@@ -71,16 +71,26 @@ Use the English templates under `.github/ISSUE_TEMPLATE/`. Before opening an iss
 4. Run the checks locally before requesting review:
 
    ```bash
-   cd server && mvn test
-   python3 -m py_compile scripts/crawl_market_jobs.py scripts/crawl_channel_jobs.py
-   node --check assets/js/app.js   # and the other changed JS files
+   cd server && mvn clean package   # compiles; there are no Java tests yet
+   python3 -m py_compile scripts/*.py
+   for f in assets/js/*.js; do node --check "$f"; done
+   python3 scripts/scrub_seed_pii.py --check
    ```
+
+   There are currently **no automated Java tests**; `mvn test` only verifies that
+   the project builds. Please note this in your test plan instead of claiming tests pass.
 
 5. If you change job data, regenerate it with the crawlers and keep **all** consumer
    seed files in sync (see the README section "Job data and crawlers").
 6. Fill in the English pull request template: summary, motivation, test plan and any
    screenshots for UI changes.
-7. Do not commit build output (`server/target/`), IDE files or local databases.
+7. `server/target/` is **tracked on purpose**: `server/Dockerfile` copies the
+   prebuilt `talent-radar-server-0.1.0.jar` directly, so contributors without a
+   local JDK/Maven can still build the image. If you change Java sources or any
+   `seed/*.json`, rebuild the jar with `cd server && mvn clean package` and commit
+   the updated jar, `.jar.original` and the corresponding `classes/` files.
+   Never commit IDE files, local databases, `maven-status/*.lst` (they contain
+   absolute local paths) or credentials.
 
 ## Code style
 

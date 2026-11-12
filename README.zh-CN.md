@@ -44,7 +44,8 @@
 - **在线模式**：页面探测 `GET /api/health`，成功后从服务端加载全量快照，变更回写。
 
 界面只展示产品级状态（如「在线」「演示数据」），不再暴露底层 Spring Boot / MySQL 等
-实现细节。
+实现细节。注意 `GET /api/health` 仍会返回存储类型、profile 与版本用于诊断，
+若部署环境敏感可在反向代理层限制该接口。
 
 ---
 
@@ -88,7 +89,7 @@ Python 3 爬虫（仅标准库，另调用系统 curl）
 │       ├── config.js              # API 地址 / 自动探测配置
 │       ├── data.js                # 演示种子、Store、匹配算法、推荐语模板
 │       ├── real-jobs.js           # 前端「立即采集」JD 池
-│       ├── market-jobs.js         # 前端全网职位池（Top 100）
+│       ├── market-jobs.js         # 前端全网职位池（626 条）
 │       ├── ui.js                  # 公共 UI 组件（标签、图标、Toast、弹窗）
 │       ├── api.js                 # API 客户端 + 演示 / 在线模式切换
 │       ├── views.js               # 各页面渲染
@@ -128,6 +129,10 @@ docker compose logs -f app
 ```
 
 访问 <http://localhost:8080/>（页面与 API 同源）。
+
+> 镜像内置的是已提交的 `server/target/talent-radar-server-0.1.0.jar`。
+> 改动 Java 源码或任意 `seed/*.json` 后，必须执行 `cd server && mvn clean package`
+> 再重建镜像，否则容器仍提供旧 jar（见[刷新岗位数据](#刷新岗位数据)）。
 
 - Swagger UI：<http://localhost:8080/swagger-ui.html>
 - 健康检查：<http://localhost:8080/api/health>
@@ -172,8 +177,11 @@ python3 -m http.server 4173
 ```bash
 cd server
 mvn clean package
-mvn test
 ```
+
+`mvn test` 目前只完成编译、**没有可运行的测试**：仓库尚无 Java 测试类
+（`server/src/test` 只有一个 profile 配置）。补齐测试已列入后续计划。
+改动种子文件后请按[刷新岗位数据](#刷新岗位数据)重打 jar。
 
 ---
 
@@ -198,7 +206,7 @@ mvn test
 | --- | --- | --- |
 | `assets/js/data.js` / `server/.../seed/state.json` | 岗位雷达页 | 当前岗位库（演示种子 / 服务端 bootstrap） |
 | `assets/js/real-jobs.js` / `server/.../seed/real-jobs.json` | 「立即采集」 | 已校验的公开 JD 池，供演示采集适配器使用 |
-| `assets/js/market-jobs.js` / `server/.../seed/market-jobs.json` | 智能匹配 | 全网职位池，用于 Top 100 排行榜 |
+| `assets/js/market-jobs.js` / `server/.../seed/market-jobs.json` | 智能匹配 | 全网职位池（626 条），供 Top 100 排行榜使用 |
 
 每条岗位都带有逐条校验过的真实详情页链接。岗位按三类渠道归组：**企业官网**、
 **招聘平台**、**微信公众号**。
@@ -208,7 +216,8 @@ mvn test
 爬虫只用 Python 标准库（对屏蔽 `urllib` 的站点额外调用系统 `curl`）：
 
 ```bash
-# 1）重建企业官网职位池（写入 454 条官网岗位）
+# 1）重建企业官网职位池（454 条；第 2 步追加其它渠道，
+#    仓库快照最终为 626 条）
 python3 scripts/crawl_market_jobs.py
 
 # 2）追加招聘平台与微信公众号岗位，并同步到所有消费者种子文件
@@ -265,10 +274,12 @@ python3 scripts/scrub_seed_pii.py --check
 | `CRAWL_MODE` | `demo` | `demo` = 已校验 JD 池，`web` = 用户配置的官网招聘页 |
 | `MAIL_ENABLED` | `false` | `true` = 真实 SMTP 投递，`false` = 只落库 |
 | `RESUME_PARSE_MODE` | `rule` | 规则解析简历（`llm` 为预留） |
-| `CORS_ORIGINS` | `*` | 静态前端允许的来源 |
-| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` | — | 发信配置 |
+| `AUTH_ENABLED` | `true` | `true` = 除健康检查与登录/注册外，所有 `/api/**` 都要求 `Authorization: Bearer <token>` |
+| `CORS_ORIGINS` | 仅回环地址 | 逗号分隔的明确来源；含通配符会被拒绝并回退到 `http://localhost:8080,http://127.0.0.1:8080` |
+| `SMTP_HOST` / `SMTP_PORT` | `smtp.exmail.qq.com` / `465` | SMTP 服务器（启用 SSL、要求鉴权） |
+| `SMTP_USER` / `SMTP_PASSWORD` | 空 | 需与 `MAIL_ENABLED=true` 一并配置，否则投递会失败 |
 
-Profile：`docker`（compose）、`h2`（内存库）、`test`（集成测试）。
+Profile：`docker`（compose）、`h2`（内存库）、`test`（仅有 profile 配置，暂无自动化测试）。
 
 ---
 
@@ -285,7 +296,13 @@ Profile：`docker`（compose）、`h2`（内存库）、`test`（集成测试）
 | `POST /api/matches/market/import` | 把 Top N 全网岗位捞入岗位库 |
 | `POST /api/mails` | 创建推荐邮件记录 |
 | `POST /api/reset` | 恢复种子数据 |
-| `GET /api/stats`、`GET /api/sources`、`GET /api/activities` | 统计与列表 |
+| `GET /api/stats/overview`、`GET /api/sources`、`GET /api/activities` | 统计与列表 |
+| `GET /api/auth/me` | 当前账号（需要 Bearer token） |
+| `/api/matches/*`、`/api/letters/*`、`/api/settings`、`/api/logs`、`/api/trend` | 匹配、推荐语、设置与日志 |
+
+除 `/api/health`、`/api/auth/register`、`/api/auth/login` 外，所有接口都需要
+`Authorization: Bearer <token>`（登录或注册时签发）。token 保存在浏览器会话中，
+由 `assets/js/api.js` 自动附加到请求头。
 
 后端运行时完整文档见 `/swagger-ui.html`。
 

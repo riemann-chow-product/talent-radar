@@ -46,8 +46,10 @@ The front-end runs in two modes:
 - **Online mode**: the page probes `GET /api/health`; when it answers, the full snapshot
   is loaded from the server and changes are synced back.
 
-The UI intentionally shows only product-level status ("Online", "Demo data"). It does
-not display the underlying Spring Boot / MySQL implementation details.
+The UI intentionally shows only product-level status ("Online", "Demo data") rather
+than Spring Boot / MySQL implementation details. Note that `GET /api/health` still
+returns storage type, profile and version for diagnostics; restrict it at the
+reverse proxy if that matters for your deployment.
 
 ---
 
@@ -92,7 +94,7 @@ Python 3 crawlers (standard library only, no third-party packages)
 │       ├── config.js              # API base URL / auto-detect settings
 │       ├── data.js                # demo seed data, store, matching, letter templates
 │       ├── real-jobs.js           # front-end "collect now" JD pool
-│       ├── market-jobs.js         # front-end whole-market job pool (Top 100)
+│       ├── market-jobs.js         # front-end whole-market job pool (626 jobs)
 │       ├── ui.js                  # shared UI helpers (tags, icons, toasts, modals)
 │       ├── api.js                 # API client + demo/online mode switching
 │       ├── views.js               # page renderers
@@ -132,6 +134,11 @@ docker compose logs -f app
 ```
 
 Open <http://localhost:8080/> (UI and API share the same origin).
+
+> The image ships the prebuilt `server/target/talent-radar-server-0.1.0.jar`.
+> After changing Java sources or any `seed/*.json`, run
+> `cd server && mvn clean package` and rebuild the image — otherwise the container
+> keeps serving the old jar (see [Job data and crawlers](#job-data-and-crawlers)).
 
 - Swagger UI: <http://localhost:8080/swagger-ui.html>
 - Health check: <http://localhost:8080/api/health>
@@ -178,8 +185,12 @@ All data is seeded locally and persisted in `localStorage`.
 ```bash
 cd server
 mvn clean package
-mvn test
 ```
+
+`mvn test` currently compiles the project but runs **no tests**: the repository
+contains no Java test class yet (`server/src/test` only holds a profile config).
+Adding coverage is tracked as a follow-up. If you change any seed file,
+rebuild the jar as described in [Job data and crawlers](#job-data-and-crawlers).
 
 ---
 
@@ -205,7 +216,7 @@ The app keeps three checked-in data sets so it works offline:
 | --- | --- | --- |
 | `assets/js/data.js` / `server/.../seed/state.json` | Job Radar page | The current job library (demo seed / server bootstrap) |
 | `assets/js/real-jobs.js` / `server/.../seed/real-jobs.json` | "Collect now" | Verified public JD pool used by the demo collection adapter |
-| `assets/js/market-jobs.js` / `server/.../seed/market-jobs.json` | Smart Matching | Whole-market pool for the Top 100 ranking |
+| `assets/js/market-jobs.js` / `server/.../seed/market-jobs.json` | Smart Matching | Whole-market pool (626 jobs) feeding the Top 100 ranking |
 
 Every job carries a real, individually verified detail URL. Jobs are grouped into three
 channel types: **企业官网 (company career sites)**, **招聘平台 (job boards)** and
@@ -217,7 +228,8 @@ The crawlers use only the Python standard library (plus the system `curl` binary
 site that blocks `urllib`):
 
 ```bash
-# 1) Rebuild the official career-site pool (writes 454 company-site jobs)
+# 1) Rebuild the company-site pool (454 jobs; step 2 appends the other channels
+#    so the committed snapshot holds 626 jobs)
 python3 scripts/crawl_market_jobs.py
 
 # 2) Append job-board and WeChat jobs, then sync every consumer seed file
@@ -281,10 +293,13 @@ variables):
 | `CRAWL_MODE` | `demo` | `demo` = verified JD pool, `web` = user-configured career pages |
 | `MAIL_ENABLED` | `false` | `true` = real SMTP delivery, `false` = record only |
 | `RESUME_PARSE_MODE` | `rule` | Rule-based resume extraction (`llm` is a placeholder) |
-| `CORS_ORIGINS` | `*` | Allowed origins for the static front-end |
-| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` | — | Outbound mail settings |
+| `AUTH_ENABLED` | `true` | Require `Authorization: Bearer <token>` on every `/api/**` endpoint except health, login and registration |
+| `CORS_ORIGINS` | loopback only | Comma-separated explicit origins; a wildcard is refused and falls back to `http://localhost:8080,http://127.0.0.1:8080` |
+| `SMTP_HOST` / `SMTP_PORT` | `smtp.exmail.qq.com` / `465` | Outbound SMTP server (SSL enabled, auth required) |
+| `SMTP_USER` / `SMTP_PASSWORD` | empty | Must be set together with `MAIL_ENABLED=true`; empty credentials make delivery fail |
 
-Profiles: `docker` (compose), `h2` (in-memory DB), `test` (integration tests).
+Profiles: `docker` (compose), `h2` (in-memory DB), `test` (profile config only;
+there are no automated tests yet).
 
 ---
 
@@ -301,7 +316,13 @@ Profiles: `docker` (compose), `h2` (in-memory DB), `test` (integration tests).
 | `POST /api/matches/market/import` | Import Top N market jobs into the job library |
 | `POST /api/mails` | Create an outreach record |
 | `POST /api/reset` | Restore seeded data |
-| `GET /api/stats`, `GET /api/sources`, `GET /api/activities` | Statistics and lists |
+| `GET /api/stats/overview`, `GET /api/sources`, `GET /api/activities` | Statistics and lists |
+| `GET /api/auth/me` | Current account (requires the bearer token) |
+| `/api/matches/*`, `/api/letters/*`, `/api/settings`, `/api/logs`, `/api/trend` | Matching, letters, settings and logs |
+
+Except `/api/health`, `/api/auth/register` and `/api/auth/login`, every endpoint
+requires `Authorization: Bearer <token>` obtained from login/register. The token
+is stored in the browser session and sent automatically by `assets/js/api.js`.
 
 Full reference: `/swagger-ui.html` when the backend is running.
 
